@@ -1,3 +1,7 @@
 {
-  "window.zoomLevel": 0
+  "window.zoomLevel": -0.9544826022735537,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "none"
 }

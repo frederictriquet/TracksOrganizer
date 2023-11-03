@@ -1,8 +1,13 @@
 {
-  "source_dir": "/Users/fred/Music/Soulseek/",
-  "bigflac": "/Users/fred/Music/1 BIGFLAC/",
-  "dustbin": "/Users/fred/Music/dustbin/",
-  "rename": "/Users/fred/Music/3 A_RENOMMER/",
-  "selection": "/Users/fred/Music/NextMix/",
-  "keep": "/Users/fred/Music/000 pré-écouté/"
+  "default": "/Users/fred/Music/Soulseek/",
+  "paths": {
+    "rename": "/Users/fred/Music/3 A_RENOMMER/",
+    "selection": "/Users/fred/Music/NextMix/",
+    "dustbin": "/Users/fred/Music/dustbin/",
+    "keep": "/Users/fred/Music/000 pré-écouté/"
+  },
+  "actions": {
+    "quit": "Key_Escape",
+    "move_to_dustbin": "Key_Asterisk"
+  }
 }

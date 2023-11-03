@@ -2,3 +2,6 @@
 .venv
 *.mp3
 *.flac
+Save/
+old/
+**/__pycache__/
