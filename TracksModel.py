@@ -15,11 +15,11 @@ class TracksModel(QtCore.QAbstractTableModel):
                 self.tracks[index.row()] = self.populate(self.tracks[index.row()])
             return self.tracks[index.row()][index.column()]
 
-    def rowCount(self, index):
+    def rowCount(self, index=0):
         # The length of the outer list.
         return len(self.tracks)
 
-    def columnCount(self, index):
+    def columnCount(self, index=0):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
         return 2
