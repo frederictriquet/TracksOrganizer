@@ -1,7 +1,7 @@
 pyqt6
 #playsound
 #PyObjC
-# python-vlc
+python-vlc
 mutagen
 #spotdl
 #deemix
