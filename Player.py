@@ -5,7 +5,7 @@ from Logger import logger
 from TracksModel import TracksModel
 import vlc
 
-PATTERN = r'.*\.(mp3|Mp3|MP3|flac)'
+PATTERN = r'.*\.(mp3|flac|aif|aiff)'
 TAGS=["Catas", "Phiphi", "Deep", "Hard", "Retro", "Trance", "Best", "Ambiant", "Fun", "Zarb", "A Cappella"]
 
 class Player(QtWidgets.QMainWindow):
@@ -148,9 +148,9 @@ class Player(QtWidgets.QMainWindow):
         logger.debug(self.current_index)
         if self.current_index >= 0 and self.current_index < self.track_model.rowCount():
             # normalement ici, la track devrait peuplée (TracksModel.populate)
-            tuple = self.track_model.tracks[self.current_index]
+            track = self.track_model.tracks[self.current_index]
             # self.current_filename = self.track_model.tracks[self.current_index]
-            self.load_track(tuple[1])
+            self.load_track(track['track'])
             # self.label.setText("You have selected: " + str(item.text()))
 
     def play_pause(self):
@@ -205,7 +205,7 @@ class Player(QtWidgets.QMainWindow):
         self.load_files(map(lambda f: path+f, sorted(os.listdir(path.replace('file://','')))))
 
     def load_files(self, filenames):
-        self.update_tracklist(list(map(lambda f: f.replace('file://',''), filter(re.compile(PATTERN).match, filenames))))
+        self.update_tracklist(list(map(lambda f: f.replace('file://',''), filter(re.compile(PATTERN, re.IGNORECASE).match, filenames))))
 
     def update_tracklist(self, filepaths):
         self.track_model = TracksModel(tracks=filepaths)

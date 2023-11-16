@@ -1,9 +1,10 @@
 {
     "configurations": [
         {
-            "name": "Python: File",
+            "name": "Organizer",
             "type": "python",
             "request": "launch",
+            "console": "integratedTerminal",
             "program": "organizer.py",
             "justMyCode": true
         }
