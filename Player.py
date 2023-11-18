@@ -21,6 +21,7 @@ class Player(QtWidgets.QMainWindow):
         self.media = None
         # Create an empty vlc media player
         self.mediaplayer = self.instance.media_player_new()
+        self.current_index = None
 
     def init_create_ui(self):
         self.widget = QtWidgets.QWidget(self)
@@ -51,8 +52,8 @@ class Player(QtWidgets.QMainWindow):
         self.positionslider.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         self.positionslider.setToolTip("Position")
         self.positionslider.setMaximum(1000)
-        self.positionslider.sliderMoved.connect(self.set_position)
-        self.positionslider.sliderPressed.connect(self.set_position)
+        self.positionslider.sliderMoved.connect(self.set_position_from_slider)
+        self.positionslider.sliderPressed.connect(self.set_position_from_slider)
 
         self.hbuttonbox = QtWidgets.QHBoxLayout()
         self.playbutton = QtWidgets.QPushButton("Play")
@@ -144,56 +145,52 @@ class Player(QtWidgets.QMainWindow):
             action()
 
     def item_clicked(self):
-        self.current_index = self.filelist.currentIndex().row()
-        logger.debug(self.current_index)
-        if self.current_index >= 0 and self.current_index < self.track_model.rowCount():
-            # normalement ici, la track devrait peuplée (TracksModel.populate)
-            track = self.track_model.tracks[self.current_index]
-            # self.current_filename = self.track_model.tracks[self.current_index]
-            self.load_track(track['track'])
-            # self.label.setText("You have selected: " + str(item.text()))
+        self.select(self.filelist.currentIndex().row())
+        self.load_current()
+        self.play()
 
     def play_pause(self):
         if self.mediaplayer.is_playing():
-            self.mediaplayer.pause()
-            self.playbutton.setText("Play")
-            self.is_paused = True
-            self.timer.stop()
+            self.pause()
         else:
-            if self.mediaplayer.play() == -1:
-                self.open_file()
-                return
+            self.play()
 
-            self.mediaplayer.play()
-            # self.playbutton.setText("Pause")
-            self.timer.start()
-            self.is_paused = False
 
     def stop(self):
         self.mediaplayer.stop()
         # self.playbutton.setText("Play")
 
-    def set_position(self, pos=None):
+    def set_position_from_slider(self):
+        '''
+        this position comes from the slider which has a [0, 1000] range
+        '''
+        # TODO retrieve pos value from event
         # The vlc MediaPlayer needs a float value between 0 and 1, Qt uses
         # integer variables, so you need a factor; the higher the factor, the
         # more precise are the results (1000 should suffice).
 
         # Set the media position to where the slider was dragged
-        self.timer.stop()
-        if pos == None:
-            pos = self.positionslider.value()
-        self.mediaplayer.set_position(pos / 1000.0)
-        self.timer.start()
+        pos = self.positionslider.value()
+        self.set_position(pos/1000.0)
 
     # / HANDLERS
 
-
+    # "Key_Escape": "quit"
     def key_to_action(self, key):
         actions = self.conf['actions']
-        action_item = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+actions[k]), actions.keys()))
-        if (len(action_item) == 0):
+        action_key = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+k), actions.keys()))
+        if (len(action_key) == 0):
             return None
-        return eval(f'self.{action_item[0]}')
+        return eval(f'self.{actions[action_key[0]]}')
+
+    ## Old version
+    ##     "quit": "Key_Escape",
+    # def key_to_action(self, key):
+    #     actions = self.conf['actions']
+    #     action_item = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+actions[k]), actions.keys()))
+    #     if (len(action_item) == 0):
+    #         return None
+    #     return eval(f'self.{action_item[0]}')
 
     def key_to_enum(self, key):
         keyname = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+k), self.keys))
@@ -219,6 +216,55 @@ class Player(QtWidgets.QMainWindow):
         print('Title', self.media.get_meta(vlc.Meta.Title))
         print('Description', self.media.get_meta(vlc.Meta.Description))
 
+    def select(self, index: int = None, increment: int = None):
+        if index != None and increment != None:
+            logger.critical('Bad Coder')
+            return
+        elif increment != None:
+            index = self.current_index
+            if increment > 0:
+                if index == None:
+                    index = -1
+                index += increment
+            elif increment < 0:
+                if index == None:
+                    index = self.track_model.rowCount()
+                index += increment
+
+        if self.track_model.rowCount() == 0:
+            index = None
+
+        if index != None:
+            if index < 0 or self.track_model.rowCount() <= index:
+                index = (index + self.track_model.rowCount()) % self.track_model.rowCount()
+
+            self.current_index = index
+        # logger.debug(self.current_index)
+        self.filelist.selectRow(self.current_index)
+
+
+    def load_current(self):
+        if self.current_index != None:
+            track = self.track_model.get_track(self.current_index)
+            self.load_track(track['fullname'])            
+
+    def pause(self):
+        self.mediaplayer.pause()
+        self.playbutton.setText("Play")
+        self.is_paused = True
+        self.timer.stop()
+
+    def play(self):
+        if self.mediaplayer.play() == -1:
+            self.open_file()
+            return
+
+        self.mediaplayer.play()
+        # self.playbutton.setText("Pause")
+        self.timer.start()
+        self.is_paused = False
+
+
     def get_time_info(self):
         # if self.mediaplayer.is_playing():
         #     stars = '* '*self.rating + '_ '*(5-self.rating)
@@ -241,4 +287,26 @@ class Player(QtWidgets.QMainWindow):
     
     def move_to_dustbin(self):
         print("MOVE TO DUSTBIN")
+    
+    def play_next_track(self):
+        self.select(increment=1)
+        self.load_current()
+        self.play()
+    
+    def play_previous_track(self):
+        self.select(increment=-1)
+        self.load_current()
+        self.play()
+    
+    def set_position(self, pos: float):
+        self.timer.stop()
+        self.mediaplayer.set_position(pos)
+        self.timer.start()
+
+    def step_backward(self, seconds: int):
+        self.step_forward(-seconds)
+
+    def step_forward(self, seconds: int):
+        self.set_position((self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration())
+
     # / KEYBOARD ACTIONS
