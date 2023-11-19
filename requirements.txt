@@ -1,3 +1,4 @@
+pyyaml
 pyqt6
 #playsound
 #PyObjC

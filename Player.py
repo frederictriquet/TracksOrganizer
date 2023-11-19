@@ -7,7 +7,6 @@ import vlc
 
 PATTERN = r'.*\.(mp3|flac|aif|aiff)'
 TAGS=["Catas", "Phiphi", "Deep", "Hard", "Retro", "Trance", "Best", "Ambiant", "Fun", "Zarb", "A Cappella"]
-
 class Player(QtWidgets.QMainWindow):
 
     def __init__(self, conf):
@@ -44,6 +43,7 @@ class Player(QtWidgets.QMainWindow):
         # self.filelist = QtWidgets.QListView()
         self.filelist = QtWidgets.QTableView()
         self.filelist.clicked.connect(self.item_clicked)
+        self.filelist.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.filelist.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
         self.waveform = QtWidgets.QFrame()
@@ -285,9 +285,6 @@ class Player(QtWidgets.QMainWindow):
         print('QUIT') 
         self.close()
     
-    def move_to_dustbin(self):
-        print("MOVE TO DUSTBIN")
-    
     def play_next_track(self):
         self.select(increment=1)
         self.load_current()
@@ -309,4 +306,17 @@ class Player(QtWidgets.QMainWindow):
     def step_forward(self, seconds: int):
         self.set_position((self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration())
 
+    def move_to_dustbin(self):
+        print("MOVE TO DUSTBIN")
+    
+    def keep_file(self):
+        print("MOVE TO ")
+
+    def incr_score(self):
+        self.set_style('*')
+
+    def set_style(self, style):
+        print(f'style: {style}')
+        if self.current_index != None:
+            self.track_model.set_style(self.current_index, style)
     # / KEYBOARD ACTIONS
