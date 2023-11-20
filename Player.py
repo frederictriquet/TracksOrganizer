@@ -207,6 +207,7 @@ class Player(QtWidgets.QMainWindow):
     def update_tracklist(self, filepaths):
         self.track_model = TracksModel(tracks=filepaths)
         self.filelist.setModel(self.track_model)
+        # self.filelist.resizeColumnsToContents()
 
     def load_track(self, fullpath):
         self.media = self.instance.media_new(fullpath)
@@ -214,7 +215,7 @@ class Player(QtWidgets.QMainWindow):
         self.media.parse()
         print('Artist', self.media.get_meta(vlc.Meta.Artist))
         print('Title', self.media.get_meta(vlc.Meta.Title))
-        print('Description', self.media.get_meta(vlc.Meta.Description))
+        print('Genre', self.media.get_meta(vlc.Meta.Genre))
 
     def select(self, index: int = None, increment: int = None):
         if index != None and increment != None:
@@ -312,8 +313,9 @@ class Player(QtWidgets.QMainWindow):
     def keep_file(self):
         print("MOVE TO ")
 
-    def incr_score(self):
-        self.set_style('*')
+    def incr_rating(self):
+        if self.current_index != None:
+            self.track_model.incr_rating(self.current_index)
 
     def set_style(self, style):
         print(f'style: {style}')

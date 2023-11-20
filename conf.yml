@@ -1,5 +1,6 @@
 ---
-default: "/Users/fred/Music/Soulseek/"
+default: "/Users/fred/Code/PyQt/tracks/"
+# default: "/Users/fred/Music/Soulseek/"
 paths:
   rename: "/Users/fred/Music/3 A_RENOMMER/"
   dustbin: "/Users/fred/Music/dustbin/"
@@ -8,6 +9,18 @@ actions:
   Key_Escape: quit
   Key_Space: play_next_track
   Key_Meta: play_previous_track
+
+  Key_0: set_position(0.0)
+  Key_1: set_position(0.1)
+  Key_2: set_position(0.2)
+  Key_3: set_position(0.3)
+  Key_4: set_position(0.4)
+  Key_5: set_position(0.5)
+  Key_6: set_position(0.6)
+  Key_7: set_position(0.7)
+  Key_8: set_position(0.8)
+  Key_9: set_position(0.9)
+
   Key_Agrave: set_position(0.0)
   Key_Ampersand: set_position(0.1)
   Key_Eacute: set_position(0.2)
@@ -18,11 +31,12 @@ actions:
   Key_Egrave: set_position(0.7)
   Key_Exclam: set_position(0.8)
   Key_Ccedilla: set_position(0.9)
-  Key_ParenRight: step_backward(10)
-  Key_Minus: step_forward(10)
+  Key_ParenRight: step_forward(10)
+  Key_Plus: step_forward(10)
+  Key_Minus: step_backward(10)
   Key_Backspace: move_to_dustbin
   Key_At: keep_file
-  Key_Asterisk: incr_score
+  Key_Asterisk: incr_rating
 
   Key_R: set_style('R') # Retro
   Key_H: set_style('H') # House
