@@ -1,4 +1,4 @@
-import os
+import os, shutil
 from PyQt6 import QtWidgets, QtGui, QtCore
 import re
 from Logger import logger
@@ -146,8 +146,8 @@ class Player(QtWidgets.QMainWindow):
 
     def item_clicked(self):
         self.select(self.filelist.currentIndex().row())
-        self.load_current()
-        self.play()
+        if self.load_current():
+            self.play()
 
     def play_pause(self):
         if self.mediaplayer.is_playing():
@@ -239,15 +239,18 @@ class Player(QtWidgets.QMainWindow):
             if index < 0 or self.track_model.rowCount() <= index:
                 index = (index + self.track_model.rowCount()) % self.track_model.rowCount()
 
-            self.current_index = index
+        self.current_index = index
         # logger.debug(self.current_index)
-        self.filelist.selectRow(self.current_index)
-
-
-    def load_current(self):
         if self.current_index != None:
-            track = self.track_model.get_track(self.current_index)
-            self.load_track(track['fullname'])            
+            self.filelist.selectRow(self.current_index)
+
+
+    def load_current(self) -> bool:
+        if self.current_index == None:
+            return False
+        track = self.track_model.get_track(self.current_index)
+        self.load_track(track['fullname'])
+        return True
 
     def pause(self):
         self.mediaplayer.pause()
@@ -257,7 +260,7 @@ class Player(QtWidgets.QMainWindow):
 
     def play(self):
         if self.mediaplayer.play() == -1:
-            self.open_file()
+            #self.open_file()
             return
 
         self.mediaplayer.play()
@@ -288,13 +291,13 @@ class Player(QtWidgets.QMainWindow):
     
     def play_next_track(self):
         self.select(increment=1)
-        self.load_current()
-        self.play()
+        if self.load_current():
+            self.play()
     
     def play_previous_track(self):
         self.select(increment=-1)
-        self.load_current()
-        self.play()
+        if self.load_current():
+            self.play()
     
     def set_position(self, pos: float):
         self.timer.stop()
@@ -308,7 +311,7 @@ class Player(QtWidgets.QMainWindow):
         self.set_position((self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration())
 
     def move_to_dustbin(self):
-        print("MOVE TO DUSTBIN")
+        self.move_file(self.conf['paths']['dustbin'])
     
     def keep_file(self):
         print("MOVE TO ")
@@ -322,3 +325,16 @@ class Player(QtWidgets.QMainWindow):
         if self.current_index != None:
             self.track_model.set_style(self.current_index, style)
     # / KEYBOARD ACTIONS
+
+    def move_file(self, dest_dir):
+        if self.current_index == None:
+            return
+        self.stop()
+        track = self.track_model.get_track(self.current_index)
+        fullname = track['fullname']
+        shutil.move(fullname, dest_dir)
+        self.track_model.remove_track(self.current_index)
+        self.select(increment=0)
+        if self.load_current():
+            self.play()
+ 

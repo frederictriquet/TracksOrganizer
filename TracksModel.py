@@ -19,6 +19,10 @@ class TracksModel(QtCore.QAbstractTableModel):
             self.tracks[index] = self.get_populated(self.tracks[index])
         return self.tracks[index]
 
+    def remove_track(self, index: int):
+        del self.tracks[index]
+        self.layoutChanged.emit()
+
     def data(self, index, role):
         self.get_track(index.row()) # ensure track is populated
 
