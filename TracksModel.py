@@ -1,15 +1,16 @@
 from PyQt6 import QtCore, QtGui
 import os, vlc, re
+from CellRenderer import CellRenderer
 from Logger import logger
 
 COLUMNS = ['filename','genre','rating', 'duration']
-COLORS = { 'mp3': 'yellow', 'flac': '#00ffff', 'aif': '#00ff00', 'aiff': '#00ff00', 'default': '#888888' }
 GENRE_PATTERN = r'^([A-Z\*][1-5])(-[A-Z\*][1-5])*$'
 class TracksModel(QtCore.QAbstractTableModel):
     def __init__(self, *args, tracks=None, **kwargs):
         super(TracksModel, self).__init__(*args, **kwargs)
         self.instance = vlc.get_default_instance()
         self.tracks = tracks or []
+        self.cell_renderer = CellRenderer(COLUMNS)
         # self.tracks = list(map(lambda f: (f,), tracks)) or []
 
     def get_track(self, index: int):
@@ -24,16 +25,8 @@ class TracksModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
 
     def data(self, index, role):
-        self.get_track(index.row()) # ensure track is populated
-
-        if role == QtCore.Qt.ItemDataRole.DisplayRole:
-            return str(self.tracks[index.row()][COLUMNS[index.column()]])
-        elif role == QtCore.Qt.ItemDataRole.ForegroundRole:
-            return QtGui.QColor(self.tracks[index.row()]['foreground'])
-        elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
-            return QtGui.QColor('black')
-        elif role == QtCore.Qt.ItemDataRole.DecorationRole and index.column()==1:
-            return QtGui.QColor('red')
+        track = self.get_track(index.row()) # ensures track is populated
+        return self.cell_renderer.get_style(track, index.column(), role)
 
     def rowCount(self, index=0):
         # The length of the outer list.
@@ -54,11 +47,12 @@ class TracksModel(QtCore.QAbstractTableModel):
             #     return str(COLUMNS[section])
 
     def get_populated(self, fullname: str):
+        import mutagen
         filename = fullname.split('/')[-1]
+        f = mutagen.File(fullname, easy=True)
+        bitrate = int(f.info.bitrate/1000)
+        sample_rate = f.info.sample_rate
         ext = os.path.splitext(fullname)[-1][1:].lower()
-        foreground = COLORS['default']
-        if ext in COLORS:
-            foreground = COLORS[ext]
 
         media = self.instance.media_new(fullname)
         media.parse()
@@ -76,16 +70,13 @@ class TracksModel(QtCore.QAbstractTableModel):
                 del genre['*']
         logger.debug(stored_genre)
         logger.debug(genre)
-        return { 'filename': filename, 'genre': genre, 'rating': stored_rating, 'fullname': fullname, 'foreground': foreground, 'duration': self.milliseconds_to_string(duration), 'duration_ms': duration }
+        return { 'filename': filename, 'genre': genre, 'rating': stored_rating, 'fullname': fullname,
+                'ext': ext, 'bitrate': bitrate, 'sample_rate': sample_rate,
+                'duration': duration }
 
     def emit_datachanged(self, row, column):
         table_index = self.index(row, column)
         self.dataChanged.emit(table_index,table_index)
-
-    def milliseconds_to_string(self, ms):
-        m = int(ms / 60000)
-        s = int(ms / 1000) % 60
-        return f'{m}:{s:02}'
 
     def set_style(self, index: int, style: str):
         track = self.get_track(index)
