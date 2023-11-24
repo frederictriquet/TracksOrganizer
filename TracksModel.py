@@ -56,8 +56,9 @@ class TracksModel(QtCore.QAbstractTableModel):
 
         media = self.instance.media_new(fullname)
         media.parse()
+        artist = media.get_meta(vlc.Meta.Artist)
+        title = media.get_meta(vlc.Meta.Title)
         stored_genre = media.get_meta(vlc.Meta.Genre)
-        logger.debug(stored_genre)
         duration = media.get_duration()
         del media
         genre = {}
@@ -71,6 +72,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         logger.debug(stored_genre)
         logger.debug(genre)
         return { 'filename': filename, 'genre': genre, 'rating': stored_rating, 'fullname': fullname,
+                'artist': artist, 'title': title,
                 'ext': ext, 'bitrate': bitrate, 'sample_rate': sample_rate,
                 'duration': duration }
 
@@ -117,21 +119,24 @@ class TracksModel(QtCore.QAbstractTableModel):
         if track == None:
             logger.critical(f'try to access track number {index} returns None')
             return
+        artist_str = track['artist'].strip()
+        title_str = track['title'].strip()
         genre = track['genre'].copy()
         genre['*'] = track['rating']
         genre_str = ("-".join(map(lambda x: f'{x}{genre[x]}', dict(sorted(genre.items())))))
         media = self.instance.media_new(track['fullname'])
+        media.set_meta(vlc.Meta.Artist, artist_str)
+        media.set_meta(vlc.Meta.Title, title_str)
         media.set_meta(vlc.Meta.Genre, genre_str)
         logger.debug(genre_str)
         media.save_meta()
         del media
 
-        # media = self.instance.media_new(track['fullname'])
-        # media.parse()
-        # stored_genre = media.get_meta(vlc.Meta.Genre)
-        # del media
-        # if stored_genre == None:
-        #     stored_genre = ""
-        # if stored_genre != genre_str:
-        #     logger.error(f'incorrect stored genre: "{genre_str}" expected, "{stored_genre}" stored')
-
+    def update_title_and_artist(self, index: int, artist: str, title: str):
+        track = self.get_track(index)
+        if track == None:
+            logger.critical(f'try to access track number {index} returns None')
+            return
+        track['artist'] = artist.strip()
+        track['title'] = title.strip()
+        self.save_track(index)

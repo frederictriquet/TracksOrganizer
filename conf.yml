@@ -1,7 +1,9 @@
+# yaml-language-server: $schema=./confSchema.json
+
 ---
-default: "/Users/fred/Code/PyQt/tracks/"
-# default: "/Users/fred/Music/Soulseek/"
 paths:
+  tracks: "/Users/fred/Code/PyQt/tracks/"
+  # tracks: "/Users/fred/Music/Soulseek/"
   rename: "/Users/fred/Music/3 A_RENOMMER/"
   dustbin: "/Users/fred/Code/PyQt/dustbin/"
   # dustbin: "/Users/fred/Music/dustbin/"
@@ -41,7 +43,7 @@ actions:
   Key_Asterisk: incr_rating
 
   Key_R: set_style('R') # Retro
-  Key_H: set_style('H') # House
+  Key_H: set_style('H') # House 
   Key_D: set_style('D') # Deep
   Key_W: set_style('W') # Weed
   Key_G: set_style('G') # Garden

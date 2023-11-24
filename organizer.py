@@ -16,10 +16,10 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     conf = load_conf('./conf.yml')
     player = Player(conf)
-    if 'default' in conf:
-        player.load_dir(conf['default'])
+    if 'tracks' in conf['paths']:
+        player.load_dir(conf['paths']['tracks'])
     player.show()
-    player.resize(800, 600)
+    # player.resize(800, 600)
     sys.exit(app.exec())
 
 

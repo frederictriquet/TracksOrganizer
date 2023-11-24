@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/root",
+    "definitions": {
+        "root": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "paths": {
+                    "$ref": "#/definitions/Paths"
+                },
+                "actions": {
+                    "$ref": "#/definitions/Actions"
+                }
+            },
+            "required": [
+                "actions",
+                "paths"
+            ],
+            "title": "root"
+        },
+        "Actions": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^Key_[a-zA-Z0-9]+$": {
+                    "type": "string"
+                }
+            },
+            "title": "Actions"
+        },
+        "Paths": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "tracks": {
+                    "type": "string"
+                },
+                "rename": {
+                    "type": "string"
+                },
+                "dustbin": {
+                    "type": "string"
+                },
+                "keep": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "dustbin",
+                "keep",
+                "rename",
+                "tracks"
+            ],
+            "title": "Paths"
+        }
+    }
+}

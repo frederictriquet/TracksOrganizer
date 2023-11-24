@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "seanwu.vscode-qt-for-python",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "redhat.vscode-yaml"
     ]
 }

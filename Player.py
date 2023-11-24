@@ -6,7 +6,6 @@ from TracksModel import TracksModel
 import vlc
 
 PATTERN = r'.*\.(mp3|flac|aif|aiff)'
-TAGS=["Catas", "Phiphi", "Deep", "Hard", "Retro", "Trance", "Best", "Ambiant", "Fun", "Zarb", "A Cappella"]
 class Player(QtWidgets.QMainWindow):
 
     def __init__(self, conf):
@@ -27,26 +26,10 @@ class Player(QtWidgets.QMainWindow):
         self.setCentralWidget(self.widget)
         self.setAcceptDrops(True)
 
-        self.tagsbuttonbox = QtWidgets.QHBoxLayout()
-
-        self.tagbutton = {}
-        for tag in TAGS:
-            self.tagbutton[tag] = QtWidgets.QPushButton(tag)
-            self.tagbutton[tag].setCheckable(True)
-            # self.tagbutton[tag].clicked[bool].connect(self.set_tags)
-            self.tagbutton[tag].setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-            self.tagsbuttonbox.addWidget(self.tagbutton[tag])
-
-        self.topzone = QtWidgets.QHBoxLayout()
-        self.topzone.addLayout(self.tagsbuttonbox)
-
-        # self.filelist = QtWidgets.QListView()
         self.filelist = QtWidgets.QTableView()
         self.filelist.clicked.connect(self.item_clicked)
         self.filelist.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.filelist.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
-
-        self.waveform = QtWidgets.QFrame()
 
         self.positionslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
         self.positionslider.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -55,51 +38,79 @@ class Player(QtWidgets.QMainWindow):
         self.positionslider.sliderMoved.connect(self.set_position_from_slider)
         self.positionslider.sliderPressed.connect(self.set_position_from_slider)
 
-        self.hbuttonbox = QtWidgets.QHBoxLayout()
+
+        # BUTTONS
+        self.vbuttonbox = QtWidgets.QVBoxLayout()
         self.playbutton = QtWidgets.QPushButton("Play")
-        self.hbuttonbox.addWidget(self.playbutton)
+        self.vbuttonbox.addWidget(self.playbutton)
         self.playbutton.clicked.connect(self.play_pause)
+        self.playbutton.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
         self.stopbutton = QtWidgets.QPushButton("Stop")
-        self.hbuttonbox.addWidget(self.stopbutton)
+        self.vbuttonbox.addWidget(self.stopbutton)
         self.stopbutton.clicked.connect(self.stop)
+        self.stopbutton.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        # /BUTTONS
 
-        self.timelabel = QtWidgets.QLabel()
-        # self.timelabel.setText(self.get_time_info())
-        self.hbuttonbox.addWidget(self.timelabel)
+        # LABELS
+        self.vlabelbox = QtWidgets.QVBoxLayout()
 
-        self.hbuttonbox.addStretch(1)
-        self.volumeslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
-        self.volumeslider.setMaximum(100)
-        # self.volumeslider.setValue(self.mediaplayer.audio_get_volume())
-        self.volumeslider.setToolTip("Volume")
-        self.hbuttonbox.addWidget(self.volumeslider)
-        # self.volumeslider.valueChanged.connect(self.set_volume)
+        self.hartistbox = QtWidgets.QHBoxLayout()
+        self.artistLabel = QtWidgets.QLabel('Artist')
+        self.hartistbox.addWidget(self.artistLabel)
+        self.editableArtist = QtWidgets.QLineEdit()
+        self.editableArtist.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
+        self.hartistbox.addWidget(self.editableArtist)
+        self.vlabelbox.addLayout(self.hartistbox)
+        self.editableArtist.setEnabled(False)
 
-        self.lowzone = QtWidgets.QVBoxLayout()
-        self.lowzone.addWidget(self.positionslider)
-        self.lowzone.addLayout(self.hbuttonbox)
+        self.htitlebox = QtWidgets.QHBoxLayout()
+        self.titleLabel = QtWidgets.QLabel('Title')
+        self.htitlebox.addWidget(self.titleLabel)
+        self.editableTitle = QtWidgets.QLineEdit()
+        self.editableTitle.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
+        self.htitlebox.addWidget(self.editableTitle)
+        self.editableTitle.setEnabled(False)
+
+        self.vlabelbox.addLayout(self.htitlebox)
+        # /LABELS
+
+        # self.timelabel = QtWidgets.QLabel()
+        # self.timelabel.setText("self.get_time_info()")
+        # self.hbuttonbox.addWidget(self.timelabel)
+
+        # self.vbuttonbox.addStretch(1)
+        # self.volumeslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
+        # self.volumeslider.setMaximum(100)
+        # # self.volumeslider.setValue(self.mediaplayer.audio_get_volume())
+        # self.volumeslider.setToolTip("Volume")
+        # self.hbuttonbox.addWidget(self.volumeslider)
+        # # self.volumeslider.valueChanged.connect(self.set_volume)
+
+        self.lowzone = QtWidgets.QHBoxLayout()
+        self.lowzone.addLayout(self.vbuttonbox)
+        self.lowzone.addLayout(self.vlabelbox)
 
         self.vboxlayout = QtWidgets.QVBoxLayout()
         self.vboxlayout.addWidget(self.filelist)
-        self.vboxlayout.addLayout(self.topzone)
+        self.vboxlayout.addWidget(self.positionslider)
         self.vboxlayout.addLayout(self.lowzone)
 
         self.widget.setLayout(self.vboxlayout)
 
         self.timer = QtCore.QTimer(self)
         self.timer.setInterval(100)
-        self.timer.timeout.connect(self.update_ui)
+        self.timer.timeout.connect(self.update_ui_timer)
 
+    def update_title_and_artist(self):
+        self.track_model.update_title_and_artist(self.current_index, artist=self.editableArtist.text(), title=self.editableTitle.text())
 
     # HANDLERS
-    def update_ui(self):
+    def update_ui_timer(self):
         # Set the slider's position to its corresponding media position
         # Note that the setValue function only takes values of type int,
         # so we must first convert the corresponding media position.
         media_pos = int(self.mediaplayer.get_position() * 1000)
-        self.positionslider.setValue(media_pos)
-        self.timelabel.setText(self.get_time_info())
 
         # No need to call this function if nothing is played
         if not self.mediaplayer.is_playing():
@@ -110,6 +121,10 @@ class Player(QtWidgets.QMainWindow):
             # This fixes that "bug".
             if not self.is_paused:
                 self.stop()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.titleLabel.setFixedSize(self.artistLabel.size()) # force alignment
 
     def dropEvent(self, e):
         dropped_data = e.mimeData().text()
@@ -137,12 +152,23 @@ class Player(QtWidgets.QMainWindow):
     def keyPressEvent(self, event):
         key = event.key()
         # print('pressed from myDialog: ', key)
-        if key == QtCore.Qt.Key.Key_Escape.value:
-            self.close()
+        if key == QtCore.Qt.Key.Key_Tab.value:
+            self.reserved_tab_handler()
         logger.debug(self.key_to_enum(key))
         action = self.key_to_action(key)
         if (action):
             action()
+
+    def reserved_tab_handler(self):
+        """switch focus on editable inputs"""
+        if not self.editableArtist.hasFocus() and not self.editableTitle.hasFocus():
+            self.editableArtist.setFocus()
+        elif self.editableArtist.hasFocus():
+            self.editableArtist.clearFocus()
+            self.editableTitle.setFocus()
+        else:
+            self.editableTitle.clearFocus()
+            self.update_title_and_artist()
 
     def item_clicked(self):
         self.select(self.filelist.currentIndex().row())
@@ -183,20 +209,24 @@ class Player(QtWidgets.QMainWindow):
             return None
         return eval(f'self.{actions[action_key[0]]}')
 
-    ## Old version
-    ##     "quit": "Key_Escape",
-    # def key_to_action(self, key):
-    #     actions = self.conf['actions']
-    #     action_item = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+actions[k]), actions.keys()))
-    #     if (len(action_item) == 0):
-    #         return None
-    #     return eval(f'self.{action_item[0]}')
-
     def key_to_enum(self, key):
         keyname = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+k), self.keys))
         if (len(keyname) == 0):
             return None
         return keyname[0]
+
+    def update_ui_items(self):
+        if self.current_index == None:
+            self.editableArtist.setText()
+            self.editableArtist.setEnabled(False)
+            self.editableTitle.setText()
+            self.editableTitle.setEnabled(False)
+        else:
+            track = self.track_model.get_track(self.current_index)
+            self.editableArtist.setText(track['artist'])
+            self.editableArtist.setEnabled(True)
+            self.editableTitle.setText(track['title'])
+            self.editableTitle.setEnabled(True)
 
     def load_dir(self, path):
         self.load_files(map(lambda f: path+f, sorted(os.listdir(path.replace('file://','')))))
@@ -207,15 +237,16 @@ class Player(QtWidgets.QMainWindow):
     def update_tracklist(self, filepaths):
         self.track_model = TracksModel(tracks=filepaths)
         self.filelist.setModel(self.track_model)
+        header = self.filelist.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        # header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         # self.filelist.resizeColumnsToContents()
 
-    def load_track(self, fullpath):
-        self.media = self.instance.media_new(fullpath)
+    def load_track(self, track):
+        self.media = self.instance.media_new(track['fullname'])
         self.mediaplayer.set_media(self.media)
-        self.media.parse()
-        print('Artist', self.media.get_meta(vlc.Meta.Artist))
-        print('Title', self.media.get_meta(vlc.Meta.Title))
-        print('Genre', self.media.get_meta(vlc.Meta.Genre))
 
     def select(self, index: int = None, increment: int = None):
         if index != None and increment != None:
@@ -244,12 +275,13 @@ class Player(QtWidgets.QMainWindow):
         if self.current_index != None:
             self.filelist.selectRow(self.current_index)
 
+        self.update_ui_items()
 
     def load_current(self) -> bool:
         if self.current_index == None:
             return False
         track = self.track_model.get_track(self.current_index)
-        self.load_track(track['fullname'])
+        self.load_track(track)
         return True
 
     def pause(self):
