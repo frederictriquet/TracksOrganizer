@@ -2,6 +2,7 @@ from PyQt6 import QtCore, QtGui
 import os, vlc, re
 from CellRenderer import CellRenderer
 from Logger import logger
+import Tools
 
 COLUMNS = ['filename','genre','rating', 'duration']
 GENRE_PATTERN = r'^([A-Z\*][1-5])(-[A-Z\*][1-5])*$'
@@ -14,7 +15,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         # self.tracks = list(map(lambda f: (f,), tracks)) or []
 
     def get_track(self, index: int):
-        if index < 0 or len(self.tracks) <= index:
+        if index == None or index < 0 or len(self.tracks) <= index:
             return None
         if type(self.tracks[index]) is not dict:
             self.tracks[index] = self.get_populated(self.tracks[index])
@@ -58,6 +59,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         media.parse()
         artist = media.get_meta(vlc.Meta.Artist)
         title = media.get_meta(vlc.Meta.Title)
+        filesize = Tools.bytes_to_Mb(os.path.getsize(fullname))
         stored_genre = media.get_meta(vlc.Meta.Genre)
         duration = media.get_duration()
         del media
@@ -72,7 +74,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         logger.debug(stored_genre)
         logger.debug(genre)
         return { 'filename': filename, 'genre': genre, 'rating': stored_rating, 'fullname': fullname,
-                'artist': artist, 'title': title,
+                'artist': artist, 'title': title, 'filesize': filesize,
                 'ext': ext, 'bitrate': bitrate, 'sample_rate': sample_rate,
                 'duration': duration }
 
@@ -96,6 +98,17 @@ class TracksModel(QtCore.QAbstractTableModel):
         else:
             genre[style] = count
         self.emit_datachanged(index,1) ## 1 = colonne 1 = genre
+        self.save_track(index)
+
+    def clear_metas(self, index: int):
+        track = self.get_track(index)
+        if track == None:
+            logger.critical(f'try to access track number {index} returns None')
+            return
+        track['rating'] = 0
+        track['genre'] = {}
+        self.emit_datachanged(index,1) ## 1 = colonne 2 = genre
+        self.emit_datachanged(index,2) ## 2 = colonne 2 = rating
         self.save_track(index)
 
     def incr_rating(self, index: int):

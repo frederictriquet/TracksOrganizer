@@ -4,6 +4,7 @@ import re
 from Logger import logger
 from TracksModel import TracksModel
 import vlc
+import Tools
 
 PATTERN = r'.*\.(mp3|flac|aif|aiff)'
 class Player(QtWidgets.QMainWindow):
@@ -53,7 +54,6 @@ class Player(QtWidgets.QMainWindow):
         # /BUTTONS
 
         # LABELS
-        self.vlabelbox = QtWidgets.QVBoxLayout()
 
         self.hartistbox = QtWidgets.QHBoxLayout()
         self.artistLabel = QtWidgets.QLabel('Artist')
@@ -61,7 +61,6 @@ class Player(QtWidgets.QMainWindow):
         self.editableArtist = QtWidgets.QLineEdit()
         self.editableArtist.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
         self.hartistbox.addWidget(self.editableArtist)
-        self.vlabelbox.addLayout(self.hartistbox)
         self.editableArtist.setEnabled(False)
 
         self.htitlebox = QtWidgets.QHBoxLayout()
@@ -72,7 +71,18 @@ class Player(QtWidgets.QMainWindow):
         self.htitlebox.addWidget(self.editableTitle)
         self.editableTitle.setEnabled(False)
 
+        self.infobox = QtWidgets.QHBoxLayout()
+        self.currenttimesLabel = QtWidgets.QLabel()
+        self.infobox.addWidget(self.currenttimesLabel)
+        self.currentbitrateLabel = QtWidgets.QLabel()
+        self.infobox.addWidget(self.currentbitrateLabel)
+        self.currentfilesizeLabel = QtWidgets.QLabel()
+        self.infobox.addWidget(self.currentfilesizeLabel)
+
+        self.vlabelbox = QtWidgets.QVBoxLayout()
+        self.vlabelbox.addLayout(self.hartistbox)
         self.vlabelbox.addLayout(self.htitlebox)
+        self.vlabelbox.addLayout(self.infobox)
         # /LABELS
 
         # self.timelabel = QtWidgets.QLabel()
@@ -111,6 +121,9 @@ class Player(QtWidgets.QMainWindow):
         # Note that the setValue function only takes values of type int,
         # so we must first convert the corresponding media position.
         media_pos = int(self.mediaplayer.get_position() * 1000)
+
+        time = f'{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {self.milliseconds_to_string(self.media.get_duration())}'
+        self.currenttimesLabel.setText(f'{time}')
 
         # No need to call this function if nothing is played
         if not self.mediaplayer.is_playing():
@@ -221,12 +234,17 @@ class Player(QtWidgets.QMainWindow):
             self.editableArtist.setEnabled(False)
             self.editableTitle.setText()
             self.editableTitle.setEnabled(False)
+            self.currenttimesLabel.setText('')
+            self.currentbitrateLabel.setText('')
         else:
             track = self.track_model.get_track(self.current_index)
             self.editableArtist.setText(track['artist'])
             self.editableArtist.setEnabled(True)
             self.editableTitle.setText(track['title'])
             self.editableTitle.setEnabled(True)
+            self.currenttimesLabel.setText('')
+            self.currentbitrateLabel.setText(f"{track['bitrate']} kbits")
+            self.currentfilesizeLabel.setText(f"{track['filesize']}")
 
     def load_dir(self, path):
         self.load_files(map(lambda f: path+f, sorted(os.listdir(path.replace('file://','')))))
@@ -347,6 +365,10 @@ class Player(QtWidgets.QMainWindow):
     
     def keep_file(self):
         print("MOVE TO ")
+
+    def clear_metas(self):
+        if self.current_index != None:
+            self.track_model.clear_metas(self.current_index)
 
     def incr_rating(self):
         if self.current_index != None:
