@@ -121,6 +121,7 @@ class Player(QtWidgets.QMainWindow):
         # Note that the setValue function only takes values of type int,
         # so we must first convert the corresponding media position.
         media_pos = int(self.mediaplayer.get_position() * 1000)
+        self.positionslider.setValue(media_pos)
 
         time = f'{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {Tools.milliseconds_to_string(self.media.get_duration())}'
         self.currenttimesLabel.setText(f'{time}')
