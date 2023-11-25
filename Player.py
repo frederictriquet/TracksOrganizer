@@ -122,7 +122,7 @@ class Player(QtWidgets.QMainWindow):
         # so we must first convert the corresponding media position.
         media_pos = int(self.mediaplayer.get_position() * 1000)
 
-        time = f'{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {self.milliseconds_to_string(self.media.get_duration())}'
+        time = f'{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {Tools.milliseconds_to_string(self.media.get_duration())}'
         self.currenttimesLabel.setText(f'{time}')
 
         # No need to call this function if nothing is played
@@ -304,35 +304,15 @@ class Player(QtWidgets.QMainWindow):
 
     def pause(self):
         self.mediaplayer.pause()
-        self.playbutton.setText("Play")
+        # self.playbutton.setText("Play")
         self.is_paused = True
         self.timer.stop()
 
     def play(self):
-        if self.mediaplayer.play() == -1:
-            #self.open_file()
-            return
-
         self.mediaplayer.play()
         # self.playbutton.setText("Pause")
         self.timer.start()
         self.is_paused = False
-
-
-    def get_time_info(self):
-        # if self.mediaplayer.is_playing():
-        #     stars = '* '*self.rating + '_ '*(5-self.rating)
-        #     return f'{self.milliseconds_to_string(self.mediaplayer.get_time())} / {self.milliseconds_to_string(self.media.get_duration())} -- {self.filesize} -- {self.bitrate} -- {stars}'
-        return 'Stopped'
-
-    def milliseconds_to_string(self, ms):
-        m = int(ms / 60000)
-        s = int(ms / 1000) % 60
-        return f'{m}:{s:02}'
-    
-    def bytes_to_Mb(self, b):
-        m = int(100 * b / 1024 / 1024) / 100
-        return f'{m} Mb'
 
     # KEYBOARD ACTIONS
     def quit(self):
