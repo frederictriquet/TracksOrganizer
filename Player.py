@@ -266,6 +266,8 @@ class Player(QtWidgets.QMainWindow):
     def load_track(self, track):
         self.media = self.instance.media_new(track['fullname'])
         self.mediaplayer.set_media(self.media)
+        self.editableArtist.clearFocus()
+        self.editableTitle.clearFocus()
 
     def select(self, index: int = None, increment: int = None):
         if index != None and increment != None:
@@ -305,13 +307,13 @@ class Player(QtWidgets.QMainWindow):
 
     def pause(self):
         self.mediaplayer.pause()
-        # self.playbutton.setText("Play")
+        self.playbutton.setText("Play")
         self.is_paused = True
         self.timer.stop()
 
     def play(self):
         self.mediaplayer.play()
-        # self.playbutton.setText("Pause")
+        self.playbutton.setText("Pause")
         self.timer.start()
         self.is_paused = False
 
@@ -356,7 +358,7 @@ class Player(QtWidgets.QMainWindow):
             self.track_model.incr_rating(self.current_index)
 
     def set_style(self, style):
-        print(f'style: {style}')
+        # print(f'style: {style}')
         if self.current_index != None:
             self.track_model.set_style(self.current_index, style)
     # / KEYBOARD ACTIONS

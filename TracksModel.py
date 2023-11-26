@@ -5,7 +5,7 @@ from Logger import logger
 import Tools
 
 COLUMNS = ['filename','genre','rating', 'duration']
-GENRE_PATTERN = r'^([A-Z\*][1-5])(-[A-Z\*][1-5])*$'
+GENRE_PATTERN = r'^([A-Z])(-[A-Z])*(-\*[0-5])$'
 class TracksModel(QtCore.QAbstractTableModel):
     def __init__(self, *args, tracks=None, **kwargs):
         super(TracksModel, self).__init__(*args, **kwargs)
@@ -63,16 +63,16 @@ class TracksModel(QtCore.QAbstractTableModel):
         stored_genre = media.get_meta(vlc.Meta.Genre)
         duration = media.get_duration()
         del media
-        genre = {}
+        genre = set()
         stored_rating = 0
         if isinstance(stored_genre, str) and re.match(GENRE_PATTERN, stored_genre):
             l = re.split('-', stored_genre)
-            genre = {x[0]:int(x[1]) for x in l}
-            if '*' in genre:
-                stored_rating = genre['*']
-                del genre['*']
-        logger.debug(stored_genre)
-        logger.debug(genre)
+            if l[-1][0] == '*':
+                stored_rating = int(l[-1][1])
+                l.pop()
+            genre = set(l)
+        # logger.debug(stored_genre)
+        # logger.debug(genre)
         return { 'filename': filename, 'genre': genre, 'rating': stored_rating, 'fullname': fullname,
                 'artist': artist, 'title': title, 'filesize': filesize,
                 'ext': ext, 'bitrate': bitrate, 'sample_rate': sample_rate,
@@ -89,14 +89,11 @@ class TracksModel(QtCore.QAbstractTableModel):
             return
         genre = track['genre']
         # logger.debug(genre)
-        count = 0
         if style in genre:
-            count = genre[style]
-        count = (count + 1) % 6
-        if count == 0:
-            del genre[style]
+            genre.discard(style)
         else:
-            genre[style] = count
+            genre.add(style)
+
         self.emit_datachanged(index,1) ## 1 = colonne 1 = genre
         self.save_track(index)
 
@@ -106,7 +103,7 @@ class TracksModel(QtCore.QAbstractTableModel):
             logger.critical(f'try to access track number {index} returns None')
             return
         track['rating'] = 0
-        track['genre'] = {}
+        track['genre'] = set()
         self.emit_datachanged(index,1) ## 1 = colonne 2 = genre
         self.emit_datachanged(index,2) ## 2 = colonne 2 = rating
         self.save_track(index)
@@ -134,9 +131,8 @@ class TracksModel(QtCore.QAbstractTableModel):
             return
         artist_str = track['artist'].strip()
         title_str = track['title'].strip()
-        genre = track['genre'].copy()
-        genre['*'] = track['rating']
-        genre_str = ("-".join(map(lambda x: f'{x}{genre[x]}', dict(sorted(genre.items())))))
+        genre_str = "-".join(sorted(track['genre']))
+        genre_str = "-".join([ genre_str, f"*{track['rating']}" ])
         media = self.instance.media_new(track['fullname'])
         media.set_meta(vlc.Meta.Artist, artist_str)
         media.set_meta(vlc.Meta.Title, title_str)

@@ -55,8 +55,10 @@ class FilenameStyler(Styler):
     def decoration(self, data, track):
         res = QtGui.QColor(QtCore.Qt.GlobalColor.green)
         if track['bitrate'] < 800:
-            res = QtGui.QColor('orange')
+            res = QtGui.QColor('yellow')
         if track['bitrate'] < 320:
+            res = QtGui.QColor('orange')
+        if track['bitrate'] < 256:
             res = QtGui.QColor(QtCore.Qt.GlobalColor.red)
         return res
 
@@ -64,8 +66,7 @@ class GenreStyler(Styler):
     def display(self, data, track):
         if len(data) == 0:
             return ''
-        return '/'.join(key + str(val) for key, val in sorted(data.items()))
-        return str(data)
+        return '/'.join(sorted(data))
     def decoration(self, data, track):
         if len(data) == 0:
             return QtGui.QColor(QtCore.Qt.GlobalColor.red)

@@ -44,10 +44,12 @@ actions:
 
   Key_Less: clear_metas
 
-  Key_R: set_style('R') # Retro
-  Key_H: set_style('H') # House 
-  Key_D: set_style('D') # Deep
-  # Key_W: set_style('W') # Weed
-  Key_P: set_style('P') # Power
-  Key_G: set_style('G') # Garden
   Key_A: set_style('A') # A Cappella
+  Key_C: set_style('C') # Classic
+  Key_D: set_style('D') # Deep
+  Key_F: set_style('F') # Funny
+  Key_G: set_style('G') # Garden
+  Key_H: set_style('H') # House 
+  Key_U: set_style('U') # Unclassable 
+  Key_P: set_style('P') # Power
+  Key_R: set_style('R') # Retro
