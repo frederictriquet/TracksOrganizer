@@ -1,9 +1,9 @@
-import sys, json
+import sys
 
 from PyQt6 import QtWidgets
 from Player import Player
 from TracksModel import TracksModel
-from Logger import init_logger
+from Logger import init_logger, logger
 
 def load_conf(conffile = './conf.yml'):
     import yaml
@@ -14,7 +14,11 @@ def load_conf(conffile = './conf.yml'):
 def main():
     init_logger()
     app = QtWidgets.QApplication(sys.argv)
-    conf = load_conf('./conf.yml')
+    conffile = './conf.yml'
+    if len(sys.argv) == 2:
+        conffile = sys.argv[1]
+    logger.debug(conffile)
+    conf = load_conf(conffile)
     player = Player(conf)
     if 'tracks' in conf['paths']:
         player.load_dir(conf['paths']['tracks'])
