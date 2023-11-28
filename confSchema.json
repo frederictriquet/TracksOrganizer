@@ -49,8 +49,7 @@
             "required": [
                 "dustbin",
                 "keep",
-                "rename",
-                "tracks"
+                "rename"
             ],
             "title": "Paths"
         }
