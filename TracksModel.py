@@ -108,7 +108,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         self.emit_datachanged(index,2) ## 2 = colonne 2 = rating
         self.save_track(index)
 
-    def incr_rating(self, index: int):
+    def incr_rating(self, index: int, amount: int):
         track = self.get_track(index)
         if track == None:
             logger.critical(f'try to access track number {index} returns None')
@@ -118,7 +118,7 @@ class TracksModel(QtCore.QAbstractTableModel):
             rating = int(rating)
         except:
             rating = 0
-        rating = (rating + 1) % 6
+        rating = (rating + amount + 6) % 6
         track['rating'] = rating
         self.emit_datachanged(index,2) ## 2 = colonne 2 = rating
         self.save_track(index)

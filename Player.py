@@ -21,6 +21,7 @@ class Player(QtWidgets.QMainWindow):
         # Create an empty vlc media player
         self.mediaplayer = self.instance.media_player_new()
         self.current_index = None
+        self.current_playrate = 1.0
 
     def init_create_ui(self):
         self.widget = QtWidgets.QWidget(self)
@@ -51,6 +52,9 @@ class Player(QtWidgets.QMainWindow):
         self.vbuttonbox.addWidget(self.stopbutton)
         self.stopbutton.clicked.connect(self.stop)
         self.stopbutton.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+
+        self.speedLabel = QtWidgets.QLabel(f'speed: 1.0')
+        self.vbuttonbox.addWidget(self.speedLabel)
         # /BUTTONS
 
         # LABELS
@@ -122,6 +126,7 @@ class Player(QtWidgets.QMainWindow):
         # so we must first convert the corresponding media position.
         media_pos = int(self.mediaplayer.get_position() * 1000)
         self.positionslider.setValue(media_pos)
+        self.speedLabel.setText(f'speed: {self.current_playrate:.1f}')
 
         time = f'{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {Tools.milliseconds_to_string(self.media.get_duration())}'
         self.currenttimesLabel.setText(f'{time}')
@@ -323,6 +328,7 @@ class Player(QtWidgets.QMainWindow):
         self.timer.stop()
 
     def play(self):
+        self.current_playrate = 1.0
         self.mediaplayer.play()
         self.playbutton.setText("Pause")
         self.timer.start()
@@ -364,14 +370,18 @@ class Player(QtWidgets.QMainWindow):
         if self.current_index != None:
             self.track_model.clear_metas(self.current_index)
 
-    def incr_rating(self):
+    def incr_rating(self, amount=1):
         if self.current_index != None:
-            self.track_model.incr_rating(self.current_index)
+            self.track_model.incr_rating(self.current_index, amount)
 
     def set_style(self, style):
         # print(f'style: {style}')
         if self.current_index != None:
             self.track_model.set_style(self.current_index, style)
+    
+    def incr_playrate(self, incr):
+        self.current_playrate += incr
+        self.mediaplayer.set_rate(self.current_playrate)
     # / KEYBOARD ACTIONS
 
     def move_file(self, dest_dir):
