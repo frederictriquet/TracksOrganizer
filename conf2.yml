@@ -2,7 +2,7 @@
 
 ---
 paths:
-  tracks: "/home/ftriquet/CodePerso/PyQt/tracks/"
+  # tracks: "/home/ftriquet/CodePerso/PyQt/tracks/"
   # tracks: "/Users/fred/Music/Soulseek/"
   rename: "/Users/fred/Music/3 A_RENOMMER/"
   dustbin: "/Users/fred/Code/PyQt/dustbin/"

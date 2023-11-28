@@ -141,8 +141,13 @@ class Player(QtWidgets.QMainWindow):
         self.titleLabel.setFixedSize(self.artistLabel.size()) # force alignment
 
     def dropEvent(self, e):
-        dropped_data = e.mimeData().text()
-        entries = dropped_data.split('\n')
+        import urllib.parse
+        # drag and drop with filenames containing spaces replaces them with '%20'
+        # and other character encondings
+        dropped_data = urllib.parse.unquote(e.mimeData().text())
+        # logger.debug(f'---{dropped_data}---')
+        dropped_data = dropped_data.replace('\r','')
+        entries = list(filter(lambda f: len(f)>0, dropped_data.split('\n')))
         #.replace('file://','')
         # print(entries)
         if len(entries) == 0:
@@ -161,6 +166,7 @@ class Player(QtWidgets.QMainWindow):
         e.accept()
 
     def dragEnterEvent(self, e):
+        logger.debug(e.mimeData())
         e.accept()
 
     def keyPressEvent(self, event):
@@ -248,7 +254,12 @@ class Player(QtWidgets.QMainWindow):
             self.currentfilesizeLabel.setText(f"{track['filesize']}")
 
     def load_dir(self, path):
-        self.load_files(map(lambda f: path+f, sorted(os.listdir(path.replace('file://','')))))
+        try:
+            logger.debug(path)
+            print(sorted(os.listdir(path.replace('file://',''))))
+            self.load_files(map(lambda f: path+f, sorted(os.listdir(path.replace('file://','')))))
+        except FileNotFoundError as e:
+            logger.error(e)
 
     def load_files(self, filenames):
         self.update_tracklist(list(map(lambda f: f.replace('file://',''), filter(re.compile(PATTERN, re.IGNORECASE).match, filenames))))
