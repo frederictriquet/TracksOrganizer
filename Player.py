@@ -22,6 +22,7 @@ class Player(QtWidgets.QMainWindow):
         self.mediaplayer = self.instance.media_player_new()
         self.current_index = None
         self.current_playrate = 1.0
+        self.setWindowTitle('Tracks Organizer')
 
     def init_create_ui(self):
         self.widget = QtWidgets.QWidget(self)
@@ -37,6 +38,8 @@ class Player(QtWidgets.QMainWindow):
         self.positionslider.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         self.positionslider.setToolTip("Position")
         self.positionslider.setMaximum(1000)
+        self.positionslider.setTickInterval(100)
+        self.positionslider.setTickPosition(QtWidgets.QSlider.TickPosition.TicksBelow)
         self.positionslider.sliderMoved.connect(self.set_position_from_slider)
         self.positionslider.sliderPressed.connect(self.set_position_from_slider)
 
@@ -134,6 +137,7 @@ class Player(QtWidgets.QMainWindow):
         # No need to call this function if nothing is played
         if not self.mediaplayer.is_playing():
             self.timer.stop()
+            self.playbutton.setText("Play")
 
             # After the video finished, the play button stills shows "Pause",
             # which is not the desired behavior of a media player.
@@ -242,9 +246,9 @@ class Player(QtWidgets.QMainWindow):
 
     def update_ui_items(self):
         if self.current_index == None:
-            self.editableArtist.setText()
+            self.editableArtist.setText('')
             self.editableArtist.setEnabled(False)
-            self.editableTitle.setText()
+            self.editableTitle.setText('')
             self.editableTitle.setEnabled(False)
             self.currenttimesLabel.setText('')
             self.currentbitrateLabel.setText('')
@@ -268,6 +272,7 @@ class Player(QtWidgets.QMainWindow):
 
     def load_files(self, filenames):
         self.update_tracklist(list(map(lambda f: f.replace('file://',''), filter(re.compile(PATTERN, re.IGNORECASE).match, filenames))))
+        self.current_index = None
 
     def update_tracklist(self, filepaths):
         self.track_model = TracksModel(tracks=filepaths)
@@ -360,11 +365,9 @@ class Player(QtWidgets.QMainWindow):
     def step_forward(self, seconds: int):
         self.set_position((self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration())
 
-    def move_to_dustbin(self):
-        self.move_file(self.conf['paths']['dustbin'])
-    
-    def keep_file(self):
-        print("MOVE TO ")
+    def move_to(self, conf_path):
+        if conf_path in self.conf['paths']:
+            self.move_file(self.conf['paths'][conf_path])
 
     def clear_metas(self):
         if self.current_index != None:

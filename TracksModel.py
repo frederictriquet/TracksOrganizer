@@ -57,8 +57,8 @@ class TracksModel(QtCore.QAbstractTableModel):
 
         media = self.instance.media_new(fullname)
         media.parse()
-        artist = media.get_meta(vlc.Meta.Artist)
-        title = media.get_meta(vlc.Meta.Title)
+        artist = media.get_meta(vlc.Meta.Artist) or ''
+        title = media.get_meta(vlc.Meta.Title) or ''
         filesize = Tools.bytes_to_Mb(os.path.getsize(fullname))
         stored_genre = media.get_meta(vlc.Meta.Genre)
         duration = media.get_duration()

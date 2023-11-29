@@ -48,7 +48,6 @@
             },
             "required": [
                 "dustbin",
-                "keep",
                 "rename"
             ],
             "title": "Paths"

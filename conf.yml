@@ -5,9 +5,9 @@ paths:
   tracks: "/Users/fred/Code/PyQt/tracks/"
   # tracks: "/Users/fred/Music/Soulseek/"
   rename: "/Users/fred/Music/3 A_RENOMMER/"
-  dustbin: "/Users/fred/Code/PyQt/dustbin/"
-  # dustbin: "/Users/fred/Music/dustbin/"
-  keep: "/Users/fred/Music/000 pré-écouté/"
+  # dustbin: "/Users/fred/Code/PyQt/dustbin/"
+  dustbin: "/Users/fred/Music/dustbin/"
+  # keep: "/Users/fred/Music/000 pré-écouté/"
 actions:
   Key_Escape: quit
   Key_Space: play_next_track
@@ -40,8 +40,9 @@ actions:
   Key_Right: step_forward(10)
   Key_Left: step_backward(10)
 
-  Key_Backspace: move_to_dustbin
-  Key_At: keep_file
+  Key_Backspace: move_to('dustbin')
+  Key_At: move_to('rename')
+
   Key_Asterisk: incr_rating
   Key_Dollar: incr_rating(-1)
 

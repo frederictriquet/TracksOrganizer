@@ -1,6 +1,6 @@
 import sys
 
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtGui
 from Player import Player
 from TracksModel import TracksModel
 from Logger import init_logger, logger
@@ -14,6 +14,8 @@ def load_conf(conffile = './conf.yml'):
 def main():
     init_logger()
     app = QtWidgets.QApplication(sys.argv)
+    icon = QtGui.QIcon("./tracksorganizer.png")
+    app.setWindowIcon(icon)
     conffile = './conf.yml'
     if len(sys.argv) == 2:
         conffile = sys.argv[1]
