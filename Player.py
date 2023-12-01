@@ -1,5 +1,5 @@
 import os, shutil
-from PyQt6 import QtWidgets, QtGui, QtCore
+from PyQt6 import QtWidgets, QtCore
 import re
 from Logger import logger
 from TracksModel import TracksModel
@@ -21,7 +21,7 @@ class Player(QtWidgets.QMainWindow):
         # Create an empty vlc media player
         self.mediaplayer = self.instance.media_player_new()
         self.current_index = None
-        self.current_playrate = 1.0
+        self.current_replay_speed = 1.0
         self.setWindowTitle('Tracks Organizer')
 
     def init_create_ui(self):
@@ -129,7 +129,7 @@ class Player(QtWidgets.QMainWindow):
         # so we must first convert the corresponding media position.
         media_pos = int(self.mediaplayer.get_position() * 1000)
         self.positionslider.setValue(media_pos)
-        self.speedLabel.setText(f'speed: {self.current_playrate:.1f}')
+        self.speedLabel.setText(f'speed: {self.current_replay_speed:.1f}')
 
         time = f'{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {Tools.milliseconds_to_string(self.media.get_duration())}'
         self.currenttimesLabel.setText(f'{time}')
@@ -333,7 +333,7 @@ class Player(QtWidgets.QMainWindow):
         self.timer.stop()
 
     def play(self):
-        self.current_playrate = 1.0
+        self.current_replay_speed = 1.0
         self.mediaplayer.play()
         self.playbutton.setText("Pause")
         self.timer.start()
@@ -382,9 +382,9 @@ class Player(QtWidgets.QMainWindow):
         if self.current_index != None:
             self.track_model.set_style(self.current_index, style)
     
-    def incr_playrate(self, incr):
-        self.current_playrate += incr
-        self.mediaplayer.set_rate(self.current_playrate)
+    def incr_replay_speed(self, incr):
+        self.current_replay_speed += incr
+        self.mediaplayer.set_rate(self.current_replay_speed)
     # / KEYBOARD ACTIONS
 
     def move_file(self, dest_dir):

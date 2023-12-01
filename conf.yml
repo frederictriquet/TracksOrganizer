@@ -35,14 +35,14 @@ actions:
   Key_Exclam: set_position(0.8)
   Key_Ccedilla: set_position(0.9)
   Key_ParenRight: step_forward(10)
-  Key_Plus: step_forward(10)
-  Key_Minus: step_backward(10)
   Key_Right: step_forward(10)
   Key_Left: step_backward(10)
 
   Key_Backspace: move_to('dustbin')
   Key_At: move_to('rename')
 
+  Key_Plus: incr_rating
+  Key_Minus: incr_rating(-1)
   Key_Asterisk: incr_rating
   Key_Dollar: incr_rating(-1)
 
@@ -57,6 +57,7 @@ actions:
   Key_U: set_style('U') # Unclassable 
   Key_P: set_style('P') # Power
   Key_R: set_style('R') # Retro
+  Key_W: set_style('W') # W
 
-  Key_Up: incr_playrate(0.1)
-  Key_Down: incr_playrate(-0.1)
+  Key_Up: incr_replay_speed(0.1)
+  Key_Down: incr_replay_speed(-0.1)

@@ -1,4 +1,4 @@
-from PyQt6 import QtCore, QtGui
+from PyQt6 import QtCore
 import os, vlc, re
 from CellRenderer import CellRenderer
 from Logger import logger
