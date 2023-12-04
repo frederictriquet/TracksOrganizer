@@ -12,6 +12,7 @@ actions:
   Key_Escape: quit
   Key_Space: play_next_track
   Key_Meta: play_previous_track
+  Key_Return: play
 
   Key_0: set_position(0.0)
   Key_1: set_position(0.1)

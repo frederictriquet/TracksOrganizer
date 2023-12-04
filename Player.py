@@ -1,5 +1,5 @@
 import os, shutil
-from PyQt6 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore, QtGui
 import re
 from Logger import logger
 from TracksModel import TracksModel
@@ -9,9 +9,9 @@ import Tools
 PATTERN = r'.*\.(mp3|flac|aif|aiff)'
 class Player(QtWidgets.QMainWindow):
 
-    def __init__(self, conf):
+    def __init__(self, conffilename:str):
+        self.conffilename = conffilename
         QtWidgets.QMainWindow.__init__(self, None)
-        self.conf = conf
         self.setWindowTitle("Media Player")
         self.init_create_ui()
         self.keys = list(filter(lambda key_name: key_name[0:4] == 'Key_', dir(QtCore.Qt.Key)))
@@ -23,6 +23,21 @@ class Player(QtWidgets.QMainWindow):
         self.current_index = None
         self.current_replay_speed = 1.0
         self.setWindowTitle('Tracks Organizer')
+        self.load_current_conffile()
+
+    def open_conffile(self):
+        # returns a tuple
+        conffilename = QtWidgets.QFileDialog.getOpenFileName(self,
+                            "Choose YAML configuration file",filter=" Yaml Files (*.yml *.yaml)")
+        conffilename = conffilename[0]
+        if len(conffilename) > 4:
+            self.conffilename = conffilename
+            self.load_current_conffile()
+
+    def load_current_conffile(self):
+        logger.debug(f'Load conffile: {self.conffilename}')
+        self.conf = Tools.load_conf(self.conffilename)
+        self.confreload_action.setText(f"Reload configuration file ({self.conffilename})")
 
     def init_create_ui(self):
         self.widget = QtWidgets.QWidget(self)
@@ -114,6 +129,17 @@ class Player(QtWidgets.QMainWindow):
         self.vboxlayout.addLayout(self.lowzone)
 
         self.widget.setLayout(self.vboxlayout)
+
+        # MENU
+        menu_bar = self.menuBar()
+        file_menu = menu_bar.addMenu("File")
+        confopen_action = QtGui.QAction("Open configuration file", self)
+        file_menu.addAction(confopen_action)
+        confopen_action.triggered.connect(self.open_conffile)
+        self.confreload_action = QtGui.QAction(f"Reload configuration file ({self.conffilename})", self)
+        file_menu.addAction(self.confreload_action)
+        self.confreload_action.triggered.connect(self.load_current_conffile)
+        # /MENU
 
         self.timer = QtCore.QTimer(self)
         self.timer.setInterval(100)
