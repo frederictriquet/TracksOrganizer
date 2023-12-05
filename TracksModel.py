@@ -3,16 +3,22 @@ import os, vlc, re
 from CellRenderer import CellRenderer
 from Logger import logger
 import Tools
+from pathlib import Path
 
 COLUMNS = ['filename','genre','rating', 'duration']
 GENRE_PATTERN = r'^([A-Z])(-[A-Z])*(-\*[0-5])$'
 class TracksModel(QtCore.QAbstractTableModel):
-    def __init__(self, *args, tracks=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(TracksModel, self).__init__(*args, **kwargs)
         self.instance = vlc.get_default_instance()
-        self.tracks = tracks or []
+        self.tracks = []
         self.cell_renderer = CellRenderer(COLUMNS)
         # self.tracks = list(map(lambda f: (f,), tracks)) or []
+
+    def append_tracks(self, tracks):
+        self.tracks.extend(tracks)
+        self.layoutChanged.emit()
+        # logger.debug(self.tracks)
 
     def get_track(self, index: int):
         if index == None or index < 0 or len(self.tracks) <= index:
@@ -20,6 +26,10 @@ class TracksModel(QtCore.QAbstractTableModel):
         if type(self.tracks[index]) is not dict:
             self.tracks[index] = self.get_populated(self.tracks[index])
         return self.tracks[index]
+
+    def clear(self):
+        self.tracks = []
+        self.layoutChanged.emit()
 
     def remove_track(self, index: int):
         del self.tracks[index]
@@ -47,13 +57,13 @@ class TracksModel(QtCore.QAbstractTableModel):
             # if orientation == QtCore.Qt.Orientation.Vertical:
             #     return str(COLUMNS[section])
 
-    def get_populated(self, fullname: str):
+    def get_populated(self, fullname: Path):
         import mutagen
-        filename = fullname.split('/')[-1]
+        filename = fullname.name
         f = mutagen.File(fullname, easy=True)
         bitrate = int(f.info.bitrate/1000)
         sample_rate = f.info.sample_rate
-        ext = os.path.splitext(fullname)[-1][1:].lower()
+        ext = fullname.suffix[1:].lower()
 
         media = self.instance.media_new(fullname)
         media.parse()

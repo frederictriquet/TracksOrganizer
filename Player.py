@@ -1,4 +1,6 @@
-import os, shutil
+import os
+from pathlib import Path
+import shutil
 from PyQt6 import QtWidgets, QtCore, QtGui
 import re
 from Logger import logger
@@ -7,10 +9,13 @@ import vlc
 import Tools
 
 PATTERN = r'.*\.(mp3|flac|aif|aiff)'
+
+
 class Player(QtWidgets.QMainWindow):
 
-    def __init__(self, conffilename:str):
+    def __init__(self, conffilename: str):
         self.conffilename = conffilename
+        self.track_model = TracksModel()
         QtWidgets.QMainWindow.__init__(self, None)
         self.setWindowTitle("Media Player")
         self.init_create_ui()
@@ -25,10 +30,14 @@ class Player(QtWidgets.QMainWindow):
         self.setWindowTitle('Tracks Organizer')
         self.load_current_conffile()
 
+    def clear_filelist(self):
+        self.track_model.clear()
+        self.current_index = None
+
     def open_conffile(self):
         # returns a tuple
         conffilename = QtWidgets.QFileDialog.getOpenFileName(self,
-                            "Choose YAML configuration file",filter=" Yaml Files (*.yml *.yaml)")
+                            "Choose YAML configuration file", filter=" Yaml Files (*.yml *.yaml)")
         conffilename = conffilename[0]
         if len(conffilename) > 4:
             self.conffilename = conffilename
@@ -45,9 +54,16 @@ class Player(QtWidgets.QMainWindow):
         self.setAcceptDrops(True)
 
         self.filelist = QtWidgets.QTableView()
+        self.filelist.setModel(self.track_model)
         self.filelist.clicked.connect(self.item_clicked)
         self.filelist.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.filelist.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        header = self.filelist.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        # header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        # self.filelist.resizeColumnsToContents()
 
         self.positionslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
         self.positionslider.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -133,13 +149,37 @@ class Player(QtWidgets.QMainWindow):
         # MENU
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu("File")
+
+        clearfilelist_action = QtGui.QAction("Clear tracks", self)
+        file_menu.addAction(clearfilelist_action)
+        clearfilelist_action.triggered.connect(self.clear_filelist)
+
+        file_menu.addSeparator()
+
         confopen_action = QtGui.QAction("Open configuration file", self)
         file_menu.addAction(confopen_action)
         confopen_action.triggered.connect(self.open_conffile)
         self.confreload_action = QtGui.QAction(f"Reload configuration file ({self.conffilename})", self)
         file_menu.addAction(self.confreload_action)
         self.confreload_action.triggered.connect(self.load_current_conffile)
+
+        file_menu.addSeparator()
+
+        quit_action = QtGui.QAction("Quit", self)
+        file_menu.addAction(quit_action)
+        quit_action.triggered.connect(self.quit)
+
         # /MENU
+
+        # TOOLBAR
+        toolbar = QtWidgets.QToolBar("My main toolbar")
+        self.addToolBar(toolbar)
+
+        toolbar.addAction(clearfilelist_action)
+        toolbar.addSeparator()
+        toolbar.addAction(confopen_action)
+        toolbar.addAction(self.confreload_action)
+        # /TOOLBAR
 
         self.timer = QtCore.QTimer(self)
         self.timer.setInterval(100)
@@ -177,26 +217,22 @@ class Player(QtWidgets.QMainWindow):
 
     def dropEvent(self, e):
         import urllib.parse
+        from pathlib import Path
         # drag and drop with filenames containing spaces replaces them with '%20'
         # and other character encondings
         dropped_data = urllib.parse.unquote(e.mimeData().text())
         # logger.debug(f'---{dropped_data}---')
-        dropped_data = dropped_data.replace('\r','')
-        entries = list(filter(lambda f: len(f)>0, dropped_data.split('\n')))
-        #.replace('file://','')
-        # print(entries)
-        if len(entries) == 0:
-            print('0 entries dropped on app, ignoring')
-            self.load_files([])
-        elif len(entries) > 1:
-            print('multiple entries dropped, keeping files only')
-            self.load_files(entries)
-        elif entries[0][-1] == '/':
-            print('dropped a directory')
-            self.load_dir(entries[0])
-        else:
-            print('dropped a file')
-            self.load_files(entries)
+        dropped_data = dropped_data.replace('\r', '')
+        dropped_paths = list(
+            map(
+                lambda f: Path(f.replace('file://', '')),
+                filter(lambda f: len(f) > 0, dropped_data.split('\n'))
+            )
+        )
+        # logger.debug(dropped_paths)
+        filepaths = Tools.scan_paths(dropped_paths, PATTERN)
+        # logger.debug(filepaths)
+        self.load_files(filepaths)
         e.setDropAction(QtCore.Qt.DropAction.MoveAction)
         e.accept()
 
@@ -235,7 +271,6 @@ class Player(QtWidgets.QMainWindow):
             self.pause()
         else:
             self.play()
-
 
     def stop(self):
         self.mediaplayer.stop()
@@ -288,27 +323,21 @@ class Player(QtWidgets.QMainWindow):
             self.currentbitrateLabel.setText(f"{track['bitrate']} kbits")
             self.currentfilesizeLabel.setText(f"{track['filesize']}")
 
-    def load_dir(self, path):
+    def load_dir(self, path: Path):
         try:
             logger.debug(path)
-            print(sorted(os.listdir(path.replace('file://',''))))
-            self.load_files(map(lambda f: path+f, sorted(os.listdir(path.replace('file://','')))))
+            print(sorted(os.listdir(path)))
+            self.load_files(map(lambda f: path / f, sorted(os.listdir(path))))
         except FileNotFoundError as e:
             logger.error(e)
 
     def load_files(self, filenames):
-        self.update_tracklist(list(map(lambda f: f.replace('file://',''), filter(re.compile(PATTERN, re.IGNORECASE).match, filenames))))
-        self.current_index = None
+        # logger.debug(filenames)
+        self.append_tracks(filenames)
+        # self.current_index = None
 
-    def update_tracklist(self, filepaths):
-        self.track_model = TracksModel(tracks=filepaths)
-        self.filelist.setModel(self.track_model)
-        header = self.filelist.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # self.filelist.resizeColumnsToContents()
+    def append_tracks(self, filepaths):
+        self.track_model.append_tracks(tracks=filepaths)
 
     def load_track(self, track):
         self.media = self.instance.media_new(track['fullname'])
@@ -367,19 +396,18 @@ class Player(QtWidgets.QMainWindow):
 
     # KEYBOARD ACTIONS
     def quit(self):
-        print('QUIT') 
         self.close()
-    
+
     def play_next_track(self):
         self.select(increment=1)
         if self.load_current():
             self.play()
-    
+
     def play_previous_track(self):
         self.select(increment=-1)
         if self.load_current():
             self.play()
-    
+
     def set_position(self, pos: float):
         self.timer.stop()
         self.mediaplayer.set_position(pos)
@@ -407,7 +435,7 @@ class Player(QtWidgets.QMainWindow):
         # print(f'style: {style}')
         if self.current_index != None:
             self.track_model.set_style(self.current_index, style)
-    
+
     def incr_replay_speed(self, incr):
         self.current_replay_speed += incr
         self.mediaplayer.set_rate(self.current_replay_speed)
@@ -424,4 +452,3 @@ class Player(QtWidgets.QMainWindow):
         self.select(increment=0)
         if self.load_current():
             self.play()
- 
