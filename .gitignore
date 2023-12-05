@@ -6,3 +6,4 @@ Save/
 old/
 **/__pycache__/
 tracks/
+.DS_Store
