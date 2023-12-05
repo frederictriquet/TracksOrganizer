@@ -17,6 +17,7 @@ class TracksModel(QtCore.QAbstractTableModel):
 
     def append_tracks(self, tracks):
         self.tracks.extend(tracks)
+        self.layoutChanged.emit()
         # logger.debug(self.tracks)
 
     def get_track(self, index: int):
@@ -25,6 +26,10 @@ class TracksModel(QtCore.QAbstractTableModel):
         if type(self.tracks[index]) is not dict:
             self.tracks[index] = self.get_populated(self.tracks[index])
         return self.tracks[index]
+
+    def clear(self):
+        self.tracks = []
+        self.layoutChanged.emit()
 
     def remove_track(self, index: int):
         del self.tracks[index]

@@ -30,6 +30,10 @@ class Player(QtWidgets.QMainWindow):
         self.setWindowTitle('Tracks Organizer')
         self.load_current_conffile()
 
+    def clear_filelist(self):
+        self.track_model.clear()
+        self.current_index = None
+
     def open_conffile(self):
         # returns a tuple
         conffilename = QtWidgets.QFileDialog.getOpenFileName(self,
@@ -145,6 +149,13 @@ class Player(QtWidgets.QMainWindow):
         # MENU
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu("File")
+
+        clearfilelist_action = QtGui.QAction("Clear tracks", self)
+        file_menu.addAction(clearfilelist_action)
+        clearfilelist_action.triggered.connect(self.clear_filelist)
+
+        file_menu.addSeparator()
+
         confopen_action = QtGui.QAction("Open configuration file", self)
         file_menu.addAction(confopen_action)
         confopen_action.triggered.connect(self.open_conffile)
@@ -159,6 +170,16 @@ class Player(QtWidgets.QMainWindow):
         quit_action.triggered.connect(self.quit)
 
         # /MENU
+
+        # TOOLBAR
+        toolbar = QtWidgets.QToolBar("My main toolbar")
+        self.addToolBar(toolbar)
+
+        toolbar.addAction(clearfilelist_action)
+        toolbar.addSeparator()
+        toolbar.addAction(confopen_action)
+        toolbar.addAction(self.confreload_action)
+        # /TOOLBAR
 
         self.timer = QtCore.QTimer(self)
         self.timer.setInterval(100)
@@ -312,16 +333,11 @@ class Player(QtWidgets.QMainWindow):
 
     def load_files(self, filenames):
         # logger.debug(filenames)
-        self.update_tracklist(filenames)
+        self.append_tracks(filenames)
         # self.current_index = None
 
-    def update_tracklist(self, filepaths):
+    def append_tracks(self, filepaths):
         self.track_model.append_tracks(tracks=filepaths)
-        self.filelist.setModel(None)
-        self.filelist.setModel(self.track_model)
-        self.filelist.update()
-        header = self.filelist.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
 
     def load_track(self, track):
         self.media = self.instance.media_new(track['fullname'])
