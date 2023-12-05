@@ -55,6 +55,7 @@ actions:
   Key_F: set_style('F') # Funny
   Key_G: set_style('G') # Garden
   Key_H: set_style('H') # House 
+  Key_L: set_style('L') # Loop 
   Key_U: set_style('U') # Unclassable 
   Key_P: set_style('P') # Power
   Key_R: set_style('R') # Retro

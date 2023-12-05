@@ -7,12 +7,16 @@ import Tools
 COLUMNS = ['filename','genre','rating', 'duration']
 GENRE_PATTERN = r'^([A-Z])(-[A-Z])*(-\*[0-5])$'
 class TracksModel(QtCore.QAbstractTableModel):
-    def __init__(self, *args, tracks=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(TracksModel, self).__init__(*args, **kwargs)
         self.instance = vlc.get_default_instance()
-        self.tracks = tracks or []
+        self.tracks = []
         self.cell_renderer = CellRenderer(COLUMNS)
         # self.tracks = list(map(lambda f: (f,), tracks)) or []
+
+    def append_tracks(self, tracks):
+        return
+        self.tracks.append(tracks)
 
     def get_track(self, index: int):
         if index == None or index < 0 or len(self.tracks) <= index:

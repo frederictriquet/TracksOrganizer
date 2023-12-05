@@ -11,9 +11,11 @@ class Player(QtWidgets.QMainWindow):
 
     def __init__(self, conffilename:str):
         self.conffilename = conffilename
+        self.track_model = TracksModel()
         QtWidgets.QMainWindow.__init__(self, None)
         self.setWindowTitle("Media Player")
         self.init_create_ui()
+        self.filelist.setModel(self.track_model)
         self.keys = list(filter(lambda key_name: key_name[0:4] == 'Key_', dir(QtCore.Qt.Key)))
         # Create a basic vlc instance
         self.instance = vlc.get_default_instance()
@@ -48,6 +50,12 @@ class Player(QtWidgets.QMainWindow):
         self.filelist.clicked.connect(self.item_clicked)
         self.filelist.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.filelist.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        header = self.filelist.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        # header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        # self.filelist.resizeColumnsToContents()
 
         self.positionslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
         self.positionslider.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -139,6 +147,13 @@ class Player(QtWidgets.QMainWindow):
         self.confreload_action = QtGui.QAction(f"Reload configuration file ({self.conffilename})", self)
         file_menu.addAction(self.confreload_action)
         self.confreload_action.triggered.connect(self.load_current_conffile)
+
+        file_menu.addSeparator()
+
+        quit_action = QtGui.QAction("Quit", self)
+        file_menu.addAction(quit_action)
+        quit_action.triggered.connect(self.quit)
+
         # /MENU
 
         self.timer = QtCore.QTimer(self)
@@ -301,14 +316,10 @@ class Player(QtWidgets.QMainWindow):
         self.current_index = None
 
     def update_tracklist(self, filepaths):
-        self.track_model = TracksModel(tracks=filepaths)
-        self.filelist.setModel(self.track_model)
-        header = self.filelist.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # self.filelist.resizeColumnsToContents()
+        return
+        self.track_model.append_tracks(tracks=filepaths)
+        # self.filelist.setModel(self.track_model)
+
 
     def load_track(self, track):
         self.media = self.instance.media_new(track['fullname'])
