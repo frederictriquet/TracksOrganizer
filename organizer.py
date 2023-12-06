@@ -2,8 +2,7 @@ import sys
 
 from PyQt6 import QtWidgets, QtGui
 from Player import Player
-from TracksModel import TracksModel
-from Logger import init_logger, logger
+from Logger import init_logger
 
 
 def main():
@@ -14,7 +13,7 @@ def main():
     conffile = './conf.yml'
     if len(sys.argv) == 2:
         conffile = sys.argv[1]
-    player = Player(conffile)
+    player = Player(conffile, app)
     # if 'tracks' in conf['paths']:
     #     player.load_dir(conf['paths']['tracks'])
     player.show()

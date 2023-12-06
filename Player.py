@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 import shutil
 from PyQt6 import QtWidgets, QtCore, QtGui
-import re
 from Logger import logger
 from TracksModel import TracksModel
 import vlc
@@ -13,7 +12,8 @@ PATTERN = r'.*\.(mp3|flac|aif|aiff)'
 
 class Player(QtWidgets.QMainWindow):
 
-    def __init__(self, conffilename: str):
+    def __init__(self, conffilename: str, app: QtWidgets.QApplication):
+        self.app = app
         self.conffilename = conffilename
         self.track_model = TracksModel()
         QtWidgets.QMainWindow.__init__(self, None)
@@ -33,6 +33,11 @@ class Player(QtWidgets.QMainWindow):
     def clear_filelist(self):
         self.track_model.clear()
         self.current_index = None
+
+    def copy_to_clipboard(self):
+        if self.current_index != None:
+            text = f'{self.editableArtist.text()} {self.editableTitle.text()}'
+            self.app.clipboard().setText(text)
 
     def open_conffile(self):
         # returns a tuple
@@ -162,6 +167,9 @@ class Player(QtWidgets.QMainWindow):
         self.confreload_action = QtGui.QAction(f"Reload configuration file ({self.conffilename})", self)
         file_menu.addAction(self.confreload_action)
         self.confreload_action.triggered.connect(self.load_current_conffile)
+        copytoclipboard_action = QtGui.QAction("Copy to clipboard", self)
+        file_menu.addAction(copytoclipboard_action)
+        copytoclipboard_action.triggered.connect(self.copy_to_clipboard)
 
         file_menu.addSeparator()
 
@@ -179,6 +187,9 @@ class Player(QtWidgets.QMainWindow):
         toolbar.addSeparator()
         toolbar.addAction(confopen_action)
         toolbar.addAction(self.confreload_action)
+        toolbar.addSeparator()
+        toolbar.addAction(copytoclipboard_action)
+
         # /TOOLBAR
 
         self.timer = QtCore.QTimer(self)
@@ -270,7 +281,10 @@ class Player(QtWidgets.QMainWindow):
         if self.mediaplayer.is_playing():
             self.pause()
         else:
-            self.play()
+            if self.current_index == None:
+                self.play_next_track()
+            else:
+                self.play()
 
     def stop(self):
         self.mediaplayer.stop()
@@ -419,9 +433,12 @@ class Player(QtWidgets.QMainWindow):
     def step_forward(self, seconds: int):
         self.set_position((self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration())
 
-    def move_to(self, conf_path):
+    def rename_to(self):
+        self.move_to('rename', rename=True)
+
+    def move_to(self, conf_path: str, rename: bool = False):
         if conf_path in self.conf['paths']:
-            self.move_file(self.conf['paths'][conf_path])
+            self.move_file(Path(self.conf['paths'][conf_path]), rename)
 
     def clear_metas(self):
         if self.current_index != None:
@@ -441,13 +458,14 @@ class Player(QtWidgets.QMainWindow):
         self.mediaplayer.set_rate(self.current_replay_speed)
     # / KEYBOARD ACTIONS
 
-    def move_file(self, dest_dir):
+    def move_file(self, dest_dir: Path, rename: bool):
         if self.current_index == None:
             return
         self.stop()
         track = self.track_model.get_track(self.current_index)
         fullname = track['fullname']
-        shutil.move(fullname, dest_dir)
+        dest_filename = f"{track['artist']} - {track['title']}.{track['ext']}" if rename else ""
+        shutil.move(fullname, dest_dir / dest_filename)
         self.track_model.remove_track(self.current_index)
         self.select(increment=0)
         if self.load_current():
