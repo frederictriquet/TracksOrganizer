@@ -1,3 +1,5 @@
+name: Build executable applications
+
 on:
   push:
 
@@ -8,6 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ windows-latest, ubuntu-latest, macos-latest]
+        node: [ 16 ]
 
     steps:
     - uses: actions/checkout@v2
