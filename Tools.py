@@ -1,9 +1,9 @@
 from pathlib import Path
 import re
 from Logger import logger
-def load_conf(yall_filename: str):
+def load_conf(yaml_filename: str):
     import yaml
-    with open(yall_filename) as file:
+    with open(yaml_filename) as file:
         stringdata = yaml.safe_load(file)
         return stringdata
 
