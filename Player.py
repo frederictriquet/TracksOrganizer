@@ -30,29 +30,6 @@ class Player(QtWidgets.QMainWindow):
         self.setWindowTitle('Tracks Organizer')
         self.load_current_conffile()
 
-    def clear_filelist(self):
-        self.track_model.clear()
-        self.current_index = None
-
-    def copy_to_clipboard(self):
-        if self.current_index != None:
-            text = f'{self.editableArtist.text()} {self.editableTitle.text()}'
-            self.app.clipboard().setText(text)
-
-    def open_conffile(self):
-        # returns a tuple
-        conffilename = QtWidgets.QFileDialog.getOpenFileName(self,
-                            "Choose YAML configuration file", filter=" Yaml Files (*.yml *.yaml)")
-        conffilename = conffilename[0]
-        if len(conffilename) > 4:
-            self.conffilename = conffilename
-            self.load_current_conffile()
-
-    def load_current_conffile(self):
-        logger.debug(f'Load conffile: {self.conffilename}')
-        self.conf = Tools.load_conf(self.conffilename)
-        self.confreload_action.setText(f"Reload configuration file ({self.conffilename})")
-
     def init_create_ui(self):
         self.widget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.widget)
@@ -200,6 +177,30 @@ class Player(QtWidgets.QMainWindow):
         self.track_model.update_title_and_artist(self.current_index, artist=self.editableArtist.text(), title=self.editableTitle.text())
 
     # HANDLERS
+
+    def clear_filelist(self):
+        self.track_model.clear()
+        self.current_index = None
+
+    def copy_to_clipboard(self):
+        if self.current_index != None:
+            text = f'{self.editableArtist.text()} {self.editableTitle.text()}'
+            self.app.clipboard().setText(text)
+
+    def open_conffile(self):
+        # returns a tuple
+        conffilename = QtWidgets.QFileDialog.getOpenFileName(self,
+                            "Choose YAML configuration file", filter=" Yaml Files (*.yml *.yaml)")
+        conffilename = conffilename[0]
+        if len(conffilename) > 4:
+            self.conffilename = conffilename
+            self.load_current_conffile()
+
+    def load_current_conffile(self):
+        logger.debug(f'Load conffile: {self.conffilename}')
+        self.conf = Tools.load_conf(self.conffilename)
+        self.confreload_action.setText(f"Reload configuration file ({self.conffilename})")
+
     def update_ui_timer(self):
         # Set the slider's position to its corresponding media position
         # Note that the setValue function only takes values of type int,

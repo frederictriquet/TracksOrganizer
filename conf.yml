@@ -61,6 +61,7 @@ actions:
   Key_U: set_style('U') # Unclassable 
   Key_P: set_style('P') # Power
   Key_R: set_style('R') # Retro
+  Key_T: set_style('T') # Trance
   Key_W: set_style('W') # W
 
   Key_Up: incr_replay_speed(0.1)
