@@ -69,7 +69,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         media.parse()
         artist = media.get_meta(vlc.Meta.Artist) or ''
         title = media.get_meta(vlc.Meta.Title) or ''
-        filesize = Tools.bytes_to_Mb(os.path.getsize(fullname))
+        filesize = Tools.bytes_to_mb(os.path.getsize(fullname))
         stored_genre = media.get_meta(vlc.Meta.Genre)
         duration = media.get_duration()
         del media
@@ -126,7 +126,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         rating = track['rating']
         try:
             rating = int(rating)
-        except:
+        except ValueError:
             rating = 0
         rating = (rating + amount + 6) % 6
         track['rating'] = rating

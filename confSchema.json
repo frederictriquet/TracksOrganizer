@@ -9,6 +9,9 @@
                 "paths": {
                     "$ref": "#/definitions/Paths"
                 },
+                "conf": {
+                    "$ref": "#/definitions/Conf"
+                },
                 "actions": {
                     "$ref": "#/definitions/Actions"
                 }
@@ -28,6 +31,15 @@
                 }
             },
             "title": "Actions"
+        },
+        "Conf": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "auto_play_next_track": {
+                    "type": "boolean"
+                }
+            }
         },
         "Paths": {
             "type": "object",

@@ -3,7 +3,7 @@ import sys
 from PyQt6 import QtWidgets, QtGui
 from Player import Player
 from Logger import init_logger
-
+from pathlib import Path
 
 def main():
     init_logger()
@@ -14,8 +14,8 @@ def main():
     if len(sys.argv) == 2:
         conffile = sys.argv[1]
     player = Player(conffile, app)
-    # if 'tracks' in conf['paths']:
-    #     player.load_dir(conf['paths']['tracks'])
+    if 'tracks' in player.conf['paths']:
+        player.load_dir(Path(player.conf['paths']['tracks']))
     player.show()
     # player.resize(800, 600)
     sys.exit(app.exec())

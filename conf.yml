@@ -10,6 +10,8 @@ paths:
   # dustbin: "/Users/fred/Code/PyQt/dustbin/"
   dustbin: "/Users/fred/Music/dustbin/"
   # keep: "/Users/fred/Music/000 pré-écouté/"
+conf:
+  auto_play_next_track: true
 actions:
   Key_Escape: quit
   Key_Space: play_next_track

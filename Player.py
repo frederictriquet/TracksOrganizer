@@ -42,10 +42,6 @@ class Player(QtWidgets.QMainWindow):
         self.filelist.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         header = self.filelist.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        # self.filelist.resizeColumnsToContents()
 
         self.positionslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
         self.positionslider.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -69,7 +65,11 @@ class Player(QtWidgets.QMainWindow):
         self.stopbutton.clicked.connect(self.stop)
         self.stopbutton.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
-        self.speedLabel = QtWidgets.QLabel(f'speed: 1.0')
+        self.autoplaycheckbox = QtWidgets.QCheckBox("auto play")
+        self.vbuttonbox.addWidget(self.autoplaycheckbox)
+        self.autoplaycheckbox.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+
+        self.speedLabel = QtWidgets.QLabel('speed: 1.0')
         self.vbuttonbox.addWidget(self.speedLabel)
         # /BUTTONS
 
@@ -200,6 +200,7 @@ class Player(QtWidgets.QMainWindow):
         logger.debug(f'Load conffile: {self.conffilename}')
         self.conf = Tools.load_conf(self.conffilename)
         self.confreload_action.setText(f"Reload configuration file ({self.conffilename})")
+        self.autoplaycheckbox.setChecked(self.conf['conf']['auto_play_next_track'])
 
     def update_ui_timer(self):
         # Set the slider's position to its corresponding media position
@@ -214,14 +215,17 @@ class Player(QtWidgets.QMainWindow):
 
         # No need to call this function if nothing is played
         if not self.mediaplayer.is_playing():
-            self.timer.stop()
-            self.playbutton.setText("Play")
+            if self.autoplaycheckbox.isChecked():
+                self.play_next_track()
+            else:
+                self.timer.stop()
+                self.playbutton.setText("Play")
 
-            # After the video finished, the play button stills shows "Pause",
-            # which is not the desired behavior of a media player.
-            # This fixes that "bug".
-            if not self.is_paused:
-                self.stop()
+                # After the video finished, the play button stills shows "Pause",
+                # which is not the desired behavior of a media player.
+                # This fixes that "bug".
+                if not self.is_paused:
+                    self.stop()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -289,7 +293,7 @@ class Player(QtWidgets.QMainWindow):
 
     def stop(self):
         self.mediaplayer.stop()
-        # self.playbutton.setText("Play")
+        self.playbutton.setText("Play")
 
     def set_position_from_slider(self):
         '''
@@ -342,7 +346,9 @@ class Player(QtWidgets.QMainWindow):
         try:
             logger.debug(path)
             print(sorted(os.listdir(path)))
-            self.load_files(map(lambda f: path / f, sorted(os.listdir(path))))
+            filepaths = Tools.scan_paths(list(map(lambda f: path / f, sorted(os.listdir(path)))), PATTERN)
+            self.load_files(filepaths)
+
         except FileNotFoundError as e:
             logger.error(e)
 
@@ -364,23 +370,20 @@ class Player(QtWidgets.QMainWindow):
         if index != None and increment != None:
             logger.critical('Bad Coder')
             return
-        elif increment != None:
+        if increment != None:
             index = self.current_index
             if increment > 0:
                 if index == None:
                     index = -1
-                index += increment
-            elif increment < 0:
-                if index == None:
+            elif increment < 0 and index == None:
                     index = self.track_model.rowCount()
-                index += increment
+            index += increment or 0
 
         if self.track_model.rowCount() == 0:
             index = None
 
-        if index != None:
-            if index < 0 or self.track_model.rowCount() <= index:
-                index = (index + self.track_model.rowCount()) % self.track_model.rowCount()
+        if index != None and (index < 0 or self.track_model.rowCount() <= index):
+            index = (index + self.track_model.rowCount()) % self.track_model.rowCount()
 
         self.current_index = index
         # logger.debug(self.current_index)
@@ -417,6 +420,8 @@ class Player(QtWidgets.QMainWindow):
         self.select(increment=1)
         if self.load_current():
             self.play()
+        else:
+            self.stop()
 
     def play_previous_track(self):
         self.select(increment=-1)
