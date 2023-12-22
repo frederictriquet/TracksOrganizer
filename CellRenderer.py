@@ -28,6 +28,8 @@ class Styler:
     def get_style(self, data, role, track):
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             return self.display(data, track)
+        if role == QtCore.Qt.ItemDataRole.ToolTipRole:
+            return self.tooltip(data, track)
         elif role == QtCore.Qt.ItemDataRole.ForegroundRole:
             return self.foreground(data, track)
         elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
@@ -41,6 +43,8 @@ class Styler:
 
     def display(self, data, track):
         return str(data)
+    def tooltip(self, data, track):
+        return None
     def foreground(self, data, track):
         return QtGui.QColor(QtCore.Qt.GlobalColor.white)
     def background(self, data, track):
@@ -52,6 +56,8 @@ class Styler:
         
 
 class FilenameStyler(Styler):
+    def tooltip(self, data, track):
+        return str(track['fullname'])
     def decoration(self, data, track):
         res = QtGui.QColor(QtCore.Qt.GlobalColor.green)
         if track['bitrate'] < 800:
@@ -63,6 +69,8 @@ class FilenameStyler(Styler):
         return res
 
 class GenreStyler(Styler):
+    def tooltip(self, data, track):
+        return ' - '.join(sorted(map(lambda genre: Tools.genre_to_str(genre), track['genre'])))
     def display(self, data, track):
         if len(data) == 0:
             return ''

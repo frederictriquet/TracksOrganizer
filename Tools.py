@@ -16,6 +16,12 @@ def bytes_to_mb(b):
     m = int(100 * b / 1024 / 1024) / 100
     return f'{m} Mb'
 
+def genre_to_str(genre: str) -> str: # TODO put it in the conf ?
+    genres = { 'A': 'A Cappella', 'C': 'Classic', 'D': 'Deep', 'F': 'Funny', 'G': 'Garden','H': 'House','L': 'Loop', 'P':'Power','R':'Retro','T':'Trance','U':'Unclassable','W':'Weed'}
+    if genre not in genres:
+        return ''
+    return genres[genre]
+
 def scan_paths(paths: list[Path], file_pattern: str) -> list[Path]:
     res = []
     r = re.compile(file_pattern, re.IGNORECASE)
