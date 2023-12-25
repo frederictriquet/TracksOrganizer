@@ -2,10 +2,11 @@ import os
 from pathlib import Path
 import shutil
 from PyQt6 import QtWidgets, QtCore, QtGui
-from Logger import logger
+from Logger import logger, set_log_level
 from TracksModel import TracksModel
 import vlc
 import Tools
+from Conf import Conf
 
 PATTERN = r'.*\.(mp3|flac|aif|aiff)'
 
@@ -198,9 +199,11 @@ class Player(QtWidgets.QMainWindow):
 
     def load_current_conffile(self):
         logger.debug(f'Load conffile: {self.conffilename}')
-        self.conf = Tools.load_conf(self.conffilename)
+        # self.conf = Tools.load_conf(self.conffilename)
+        Conf.load(self.conffilename)
         self.confreload_action.setText(f"Reload configuration file ({self.conffilename})")
-        self.autoplaycheckbox.setChecked(self.conf['conf']['auto_play_next_track'])
+        self.autoplaycheckbox.setChecked(Conf.conf_data['conf']['auto_play_next_track'])
+        set_log_level(Conf.conf_data['conf']['log_level'])
 
     def update_ui_timer(self):
         # Set the slider's position to its corresponding media position
@@ -293,6 +296,7 @@ class Player(QtWidgets.QMainWindow):
 
     def stop(self):
         self.mediaplayer.stop()
+        self.timer.stop()
         self.playbutton.setText("Play")
 
     def set_position_from_slider(self):
@@ -312,7 +316,7 @@ class Player(QtWidgets.QMainWindow):
 
     # "Key_Escape": "quit"
     def key_to_action(self, key):
-        actions = self.conf['actions']
+        actions = Conf.conf_data['actions']
         action_key = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+k), actions.keys()))
         if (len(action_key) == 0):
             return None
@@ -443,8 +447,8 @@ class Player(QtWidgets.QMainWindow):
         self.move_to('rename', rename=True)
 
     def move_to(self, conf_path: str, rename: bool = False):
-        if conf_path in self.conf['paths']:
-            self.move_file(Path(self.conf['paths'][conf_path]), rename)
+        if conf_path in Conf.conf_data['paths']:
+            self.move_file(Path(Conf.conf_data['paths'][conf_path]), rename)
 
     def clear_metas(self):
         if self.current_index != None:

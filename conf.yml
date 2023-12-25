@@ -12,6 +12,8 @@ paths:
   # keep: "/Users/fred/Music/000 pré-écouté/"
 conf:
   auto_play_next_track: true
+  log_level: ERROR
+  # log_level: DEBUG
 actions:
   Key_Escape: quit
   Key_Space: play_next_track
@@ -28,6 +30,11 @@ actions:
   Key_7: set_position(0.7)
   Key_8: set_position(0.8)
   Key_9: set_position(0.9)
+
+  Key_Comma: set_position(0.2)
+  Key_Semicolon: set_position(0.4)
+  Key_Colon: set_position(0.6)
+  Key_Equal: set_position(0.8)
 
   Key_Agrave: set_position(0.0)
   Key_Ampersand: set_position(0.1)
@@ -68,3 +75,16 @@ actions:
 
   Key_Up: incr_replay_speed(0.1)
   Key_Down: incr_replay_speed(-0.1)
+genres:
+  A: A Cappella
+  C: Classic
+  D: Deep
+  F: Funny
+  G: Garden
+  H: House
+  L: Loop
+  P: Power
+  R: Retro
+  T: Trance
+  U: Unclassable
+  W: Weed

@@ -1,5 +1,6 @@
 from PyQt6 import QtCore, QtGui
 import Tools
+from Conf import Conf
 
 COLORS = {
     'mp3': 'yellow',
@@ -39,8 +40,6 @@ class Styler:
         elif role == QtCore.Qt.ItemDataRole.TextAlignmentRole:
             return self.alignment(data, track)
 
-
-
     def display(self, data, track):
         return str(data)
     def tooltip(self, data, track):
@@ -70,7 +69,7 @@ class FilenameStyler(Styler):
 
 class GenreStyler(Styler):
     def tooltip(self, data, track):
-        return ' - '.join(sorted(map(lambda genre: Tools.genre_to_str(genre), track['genre'])))
+        return ' - '.join(sorted(map(lambda genre: Conf.get_genre(genre), track['genre'])))
     def display(self, data, track):
         if len(data) == 0:
             return ''

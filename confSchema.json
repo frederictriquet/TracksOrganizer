@@ -14,6 +14,9 @@
                 },
                 "actions": {
                     "$ref": "#/definitions/Actions"
+                },
+                "genres": {
+                    "$ref": "#/definitions/Genres"
                 }
             },
             "required": [
@@ -38,8 +41,28 @@
             "properties": {
                 "auto_play_next_track": {
                     "type": "boolean"
+                },
+                "log_level": {
+                    "type": "string",
+                    "enum": [
+                        "DEBUG",
+                        "INFO",
+                        "WARNING",
+                        "ERROR",
+                        "CRITICAL"
+                    ]
                 }
             }
+        },
+        "Genres": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^[A-Z]$": {
+                    "type": "string"
+                }
+            },
+            "title": "Genres"
         },
         "Paths": {
             "type": "object",
