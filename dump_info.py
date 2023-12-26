@@ -6,15 +6,17 @@ def dump(filename: str):
     file = mutagen.File(filename, easy=True)
     try:
         print(f'{int(file.info.bitrate/1000)} kb/s')
-    except:
+    except AttributeError:
+        pass
+    except ValueError:
         pass
     try:
         print(f'{file.info.sample_rate} Hz')
-    except:
+    except AttributeError:
         pass
     try:
         print(f'{file.info.length} seconds')
-    except:
+    except AttributeError:
         pass
 
     # print(file.tags['artist'])

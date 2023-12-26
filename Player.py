@@ -8,11 +8,10 @@ import vlc
 import Tools
 from Conf import Conf
 
-PATTERN = r'.*\.(mp3|flac|aif|aiff)'
+PATTERN = r".*\.(mp3|flac|aif|aiff)"
 
 
 class Player(QtWidgets.QMainWindow):
-
     def __init__(self, conffilename: str, app: QtWidgets.QApplication):
         self.app = app
         self.conffilename = conffilename
@@ -20,7 +19,9 @@ class Player(QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self, None)
         self.setWindowTitle("Media Player")
         self.init_create_ui()
-        self.keys = list(filter(lambda key_name: key_name[0:4] == 'Key_', dir(QtCore.Qt.Key)))
+        self.keys = list(
+            filter(lambda key_name: key_name[0:4] == "Key_", dir(QtCore.Qt.Key))
+        )
         # Create a basic vlc instance
         self.instance = vlc.get_default_instance()
         self.media = None
@@ -28,7 +29,7 @@ class Player(QtWidgets.QMainWindow):
         self.mediaplayer = self.instance.media_player_new()
         self.current_index = None
         self.current_replay_speed = 1.0
-        self.setWindowTitle('Tracks Organizer')
+        self.setWindowTitle("Tracks Organizer")
         self.load_current_conffile()
 
     def init_create_ui(self):
@@ -39,7 +40,9 @@ class Player(QtWidgets.QMainWindow):
         self.filelist = QtWidgets.QTableView()
         self.filelist.setModel(self.track_model)
         self.filelist.clicked.connect(self.item_clicked)
-        self.filelist.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.filelist.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows
+        )
         self.filelist.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         header = self.filelist.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
@@ -52,7 +55,6 @@ class Player(QtWidgets.QMainWindow):
         self.positionslider.setTickPosition(QtWidgets.QSlider.TickPosition.TicksBelow)
         self.positionslider.sliderMoved.connect(self.set_position_from_slider)
         self.positionslider.sliderPressed.connect(self.set_position_from_slider)
-
 
         # BUTTONS
         self.vbuttonbox = QtWidgets.QVBoxLayout()
@@ -70,14 +72,14 @@ class Player(QtWidgets.QMainWindow):
         self.vbuttonbox.addWidget(self.autoplaycheckbox)
         self.autoplaycheckbox.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
-        self.speedLabel = QtWidgets.QLabel('speed: 1.0')
+        self.speedLabel = QtWidgets.QLabel("speed: 1.0")
         self.vbuttonbox.addWidget(self.speedLabel)
         # /BUTTONS
 
         # LABELS
 
         self.hartistbox = QtWidgets.QHBoxLayout()
-        self.artistLabel = QtWidgets.QLabel('Artist')
+        self.artistLabel = QtWidgets.QLabel("Artist")
         self.hartistbox.addWidget(self.artistLabel)
         self.editableArtist = QtWidgets.QLineEdit()
         self.editableArtist.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
@@ -85,7 +87,7 @@ class Player(QtWidgets.QMainWindow):
         self.editableArtist.setEnabled(False)
 
         self.htitlebox = QtWidgets.QHBoxLayout()
-        self.titleLabel = QtWidgets.QLabel('Title')
+        self.titleLabel = QtWidgets.QLabel("Title")
         self.htitlebox.addWidget(self.titleLabel)
         self.editableTitle = QtWidgets.QLineEdit()
         self.editableTitle.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
@@ -105,18 +107,6 @@ class Player(QtWidgets.QMainWindow):
         self.vlabelbox.addLayout(self.htitlebox)
         self.vlabelbox.addLayout(self.infobox)
         # /LABELS
-
-        # self.timelabel = QtWidgets.QLabel()
-        # self.timelabel.setText("self.get_time_info()")
-        # self.hbuttonbox.addWidget(self.timelabel)
-
-        # self.vbuttonbox.addStretch(1)
-        # self.volumeslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
-        # self.volumeslider.setMaximum(100)
-        # # self.volumeslider.setValue(self.mediaplayer.audio_get_volume())
-        # self.volumeslider.setToolTip("Volume")
-        # self.hbuttonbox.addWidget(self.volumeslider)
-        # # self.volumeslider.valueChanged.connect(self.set_volume)
 
         self.lowzone = QtWidgets.QHBoxLayout()
         self.lowzone.addLayout(self.vbuttonbox)
@@ -142,7 +132,9 @@ class Player(QtWidgets.QMainWindow):
         confopen_action = QtGui.QAction("Open configuration file", self)
         file_menu.addAction(confopen_action)
         confopen_action.triggered.connect(self.open_conffile)
-        self.confreload_action = QtGui.QAction(f"Reload configuration file ({self.conffilename})", self)
+        self.confreload_action = QtGui.QAction(
+            f"Reload configuration file ({self.conffilename})", self
+        )
         file_menu.addAction(self.confreload_action)
         self.confreload_action.triggered.connect(self.load_current_conffile)
         copytoclipboard_action = QtGui.QAction("Copy to clipboard", self)
@@ -175,7 +167,11 @@ class Player(QtWidgets.QMainWindow):
         self.timer.timeout.connect(self.update_ui_timer)
 
     def update_title_and_artist(self):
-        self.track_model.update_title_and_artist(self.current_index, artist=self.editableArtist.text(), title=self.editableTitle.text())
+        self.track_model.update_title_and_artist(
+            self.current_index,
+            artist=self.editableArtist.text(),
+            title=self.editableTitle.text(),
+        )
 
     # HANDLERS
 
@@ -185,25 +181,27 @@ class Player(QtWidgets.QMainWindow):
 
     def copy_to_clipboard(self):
         if self.current_index != None:
-            text = f'{self.editableArtist.text()} {self.editableTitle.text()}'
+            text = f"{self.editableArtist.text()} {self.editableTitle.text()}"
             self.app.clipboard().setText(text)
 
     def open_conffile(self):
         # returns a tuple
-        conffilename = QtWidgets.QFileDialog.getOpenFileName(self,
-                            "Choose YAML configuration file", filter=" Yaml Files (*.yml *.yaml)")
+        conffilename = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Choose YAML configuration file", filter=" Yaml Files (*.yml *.yaml)"
+        )
         conffilename = conffilename[0]
         if len(conffilename) > 4:
             self.conffilename = conffilename
             self.load_current_conffile()
 
     def load_current_conffile(self):
-        logger.debug(f'Load conffile: {self.conffilename}')
-        # self.conf = Tools.load_conf(self.conffilename)
+        logger.debug(f"Load conffile: {self.conffilename}")
         Conf.load(self.conffilename)
-        self.confreload_action.setText(f"Reload configuration file ({self.conffilename})")
-        self.autoplaycheckbox.setChecked(Conf.conf_data['conf']['auto_play_next_track'])
-        set_log_level(Conf.conf_data['conf']['log_level'])
+        self.confreload_action.setText(
+            f"Reload configuration file ({self.conffilename})"
+        )
+        self.autoplaycheckbox.setChecked(Conf.conf_data["conf"]["auto_play_next_track"])
+        set_log_level(Conf.conf_data["conf"]["log_level"])
 
     def update_ui_timer(self):
         # Set the slider's position to its corresponding media position
@@ -211,10 +209,10 @@ class Player(QtWidgets.QMainWindow):
         # so we must first convert the corresponding media position.
         media_pos = int(self.mediaplayer.get_position() * 1000)
         self.positionslider.setValue(media_pos)
-        self.speedLabel.setText(f'speed: {self.current_replay_speed:.1f}')
+        self.speedLabel.setText(f"speed: {self.current_replay_speed:.1f}")
 
-        time = f'{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {Tools.milliseconds_to_string(self.media.get_duration())}'
-        self.currenttimesLabel.setText(f'{time}')
+        time = f"{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {Tools.milliseconds_to_string(self.media.get_duration())}"
+        self.currenttimesLabel.setText(f"{time}")
 
         # No need to call this function if nothing is played
         if not self.mediaplayer.is_playing():
@@ -232,20 +230,21 @@ class Player(QtWidgets.QMainWindow):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.titleLabel.setFixedSize(self.artistLabel.size()) # force alignment
+        self.titleLabel.setFixedSize(self.artistLabel.size())  # force alignment
 
     def dropEvent(self, e):
         import urllib.parse
         from pathlib import Path
+
         # drag and drop with filenames containing spaces replaces them with '%20'
         # and other character encondings
         dropped_data = urllib.parse.unquote(e.mimeData().text())
         # logger.debug(f'---{dropped_data}---')
-        dropped_data = dropped_data.replace('\r', '')
+        dropped_data = dropped_data.replace("\r", "")
         dropped_paths = list(
             map(
-                lambda f: Path(f.replace('file://', '')),
-                filter(lambda f: len(f) > 0, dropped_data.split('\n'))
+                lambda f: Path(f.replace("file://", "")),
+                filter(lambda f: len(f) > 0, dropped_data.split("\n")),
             )
         )
         # logger.debug(dropped_paths)
@@ -266,7 +265,7 @@ class Player(QtWidgets.QMainWindow):
             self.reserved_tab_handler()
         logger.debug(self.key_to_enum(key))
         action = self.key_to_action(key)
-        if (action):
+        if action:
             action()
 
     def reserved_tab_handler(self):
@@ -300,49 +299,50 @@ class Player(QtWidgets.QMainWindow):
         self.playbutton.setText("Play")
 
     def set_position_from_slider(self):
-        '''
+        """
         this position comes from the slider which has a [0, 1000] range
-        '''
-        # TODO retrieve pos value from event
+        """
         # The vlc MediaPlayer needs a float value between 0 and 1, Qt uses
         # integer variables, so you need a factor; the higher the factor, the
         # more precise are the results (1000 should suffice).
 
         # Set the media position to where the slider was dragged
         pos = self.positionslider.value()
-        self.set_position(pos/1000.0)
+        self.set_position(pos / 1000.0)
 
     # / HANDLERS
 
     # "Key_Escape": "quit"
     def key_to_action(self, key):
-        actions = Conf.conf_data['actions']
-        action_key = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+k), actions.keys()))
-        if (len(action_key) == 0):
+        actions = Conf.conf_data["actions"]
+        action_key = list(
+            filter(lambda k: key == eval("QtCore.Qt.Key." + k), actions.keys())
+        )
+        if len(action_key) == 0:
             return None
-        return eval(f'self.{actions[action_key[0]]}')
+        return eval(f"self.{actions[action_key[0]]}")
 
     def key_to_enum(self, key):
-        keyname = list(filter(lambda k: key == eval('QtCore.Qt.Key.'+k), self.keys))
-        if (len(keyname) == 0):
+        keyname = list(filter(lambda k: key == eval("QtCore.Qt.Key." + k), self.keys))
+        if len(keyname) == 0:
             return None
         return keyname[0]
 
     def update_ui_items(self):
         if self.current_index == None:
-            self.editableArtist.setText('')
+            self.editableArtist.setText("")
             self.editableArtist.setEnabled(False)
-            self.editableTitle.setText('')
+            self.editableTitle.setText("")
             self.editableTitle.setEnabled(False)
-            self.currenttimesLabel.setText('')
-            self.currentbitrateLabel.setText('')
+            self.currenttimesLabel.setText("")
+            self.currentbitrateLabel.setText("")
         else:
             track = self.track_model.get_track(self.current_index)
-            self.editableArtist.setText(track['artist'])
+            self.editableArtist.setText(track["artist"])
             self.editableArtist.setEnabled(True)
-            self.editableTitle.setText(track['title'])
+            self.editableTitle.setText(track["title"])
             self.editableTitle.setEnabled(True)
-            self.currenttimesLabel.setText('')
+            self.currenttimesLabel.setText("")
             self.currentbitrateLabel.setText(f"{track['bitrate']} kbits")
             self.currentfilesizeLabel.setText(f"{track['filesize']}")
 
@@ -350,36 +350,37 @@ class Player(QtWidgets.QMainWindow):
         try:
             logger.debug(path)
             print(sorted(os.listdir(path)))
-            filepaths = Tools.scan_paths(list(map(lambda f: path / f, sorted(os.listdir(path)))), PATTERN)
+            filepaths = Tools.scan_paths(
+                list(map(lambda f: path / f, sorted(os.listdir(path)))), PATTERN
+            )
             self.load_files(filepaths)
 
         except FileNotFoundError as e:
             logger.error(e)
 
     def load_files(self, filenames):
-        # logger.debug(filenames)
+        logger.debug(filenames)
         self.append_tracks(filenames)
-        # self.current_index = None
 
     def append_tracks(self, filepaths):
         self.track_model.append_tracks(tracks=filepaths)
 
     def load_track(self, track):
-        self.media = self.instance.media_new(track['fullname'])
+        self.media = self.instance.media_new(track["fullname"])
         self.mediaplayer.set_media(self.media)
         self.editableArtist.clearFocus()
         self.editableTitle.clearFocus()
 
     def select(self, index: int = None, increment: int = None):
         if index != None and increment != None:
-            logger.critical('Bad Coder')
+            logger.critical("Bad Coder")
             return
         if increment != None:
             index = self.current_index
-            if increment > 0:
-                if index == None:
+            if index == None:
+                if increment > 0:
                     index = -1
-            elif increment < 0 and index == None:
+                elif increment < 0:
                     index = self.track_model.rowCount()
             index += increment or 0
 
@@ -441,14 +442,16 @@ class Player(QtWidgets.QMainWindow):
         self.step_forward(-seconds)
 
     def step_forward(self, seconds: int):
-        self.set_position((self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration())
+        self.set_position(
+            (self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration()
+        )
 
     def rename_to(self):
-        self.move_to('rename', rename=True)
+        self.move_to("rename", rename=True)
 
     def move_to(self, conf_path: str, rename: bool = False):
-        if conf_path in Conf.conf_data['paths']:
-            self.move_file(Path(Conf.conf_data['paths'][conf_path]), rename)
+        if conf_path in Conf.conf_data["paths"]:
+            self.move_file(Path(Conf.conf_data["paths"][conf_path]), rename)
 
     def clear_metas(self):
         if self.current_index != None:
@@ -466,6 +469,7 @@ class Player(QtWidgets.QMainWindow):
     def incr_replay_speed(self, incr):
         self.current_replay_speed += incr
         self.mediaplayer.set_rate(self.current_replay_speed)
+
     # / KEYBOARD ACTIONS
 
     def move_file(self, dest_dir: Path, rename: bool):
@@ -473,8 +477,10 @@ class Player(QtWidgets.QMainWindow):
             return
         self.stop()
         track = self.track_model.get_track(self.current_index)
-        fullname = track['fullname']
-        dest_filename = f"{track['artist']} - {track['title']}.{track['ext']}" if rename else ""
+        fullname = track["fullname"]
+        dest_filename = (
+            f"{track['artist']} - {track['title']}.{track['ext']}" if rename else ""
+        )
         shutil.move(fullname, dest_dir / dest_filename)
         self.track_model.remove_track(self.current_index)
         self.select(increment=0)
