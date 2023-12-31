@@ -258,7 +258,7 @@ class Player(QtWidgets.QMainWindow):
         logger.debug(e.mimeData())
         e.accept()
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
         key = event.key()
         # print('pressed from myDialog: ', key)
         if key == QtCore.Qt.Key.Key_Tab.value:

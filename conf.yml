@@ -2,7 +2,7 @@
 
 ---
 paths:
-  tracks: "/Users/fred/Code/PyQt/tracks/"
+  # tracks: "/Users/fred/Code/PyQt/tracks/"
   # tracks: "/Users/fred/Music/Soulseek/"
   rename: "/Users/fred/Music/4 GOODNAMES/"
   # rename: "/Users/fred/Music/3 A_RENOMMER/"

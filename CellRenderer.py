@@ -66,8 +66,10 @@ class FilenameStyler(Styler):
         return str(track["fullname"])
 
     def decoration(self, data, track):
-        res = QtGui.QColor(QtCore.Qt.GlobalColor.green)
+        res = QtGui.QColor(QtCore.Qt.GlobalColor.blue)
         if track["bitrate"] < 800:
+            res = QtGui.QColor(QtCore.Qt.GlobalColor.blue)
+        if track["bitrate"] == 320:
             res = QtGui.QColor("yellow")
         if track["bitrate"] < 320:
             res = QtGui.QColor("orange")
