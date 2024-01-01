@@ -7,6 +7,7 @@ from TracksModel import TracksModel
 import vlc
 import Tools
 from Conf import Conf
+import Discogs
 
 PATTERN = r".*\.(mp3|flac|aif|aiff)"
 
@@ -446,8 +447,8 @@ class Player(QtWidgets.QMainWindow):
             (self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration()
         )
 
-    def rename_to(self):
-        self.move_to("rename", rename=True)
+    def rename_to(self, conf_path: str):
+        self.move_to(conf_path, rename=True)
 
     def move_to(self, conf_path: str, rename: bool = False):
         if conf_path in Conf.conf_data["paths"]:
@@ -469,6 +470,11 @@ class Player(QtWidgets.QMainWindow):
     def incr_replay_speed(self, incr):
         self.current_replay_speed += incr
         self.mediaplayer.set_rate(self.current_replay_speed)
+
+    def ask_discogs(self):
+        if self.current_index != None:
+            track = self.track_model.get_track(self.current_index)
+            Discogs.ask(track['artist'],track['title'])
 
     # / KEYBOARD ACTIONS
 

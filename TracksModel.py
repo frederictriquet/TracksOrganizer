@@ -70,6 +70,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         title = media.get_meta(vlc.Meta.Title) or ""
         filesize = Tools.bytes_to_mb(os.path.getsize(fullname))
         stored_genre = media.get_meta(vlc.Meta.Genre)
+        stored_date = media.get_meta(vlc.Meta.Date)
         duration = media.get_duration()
         del media
         genre = set()
@@ -92,6 +93,7 @@ class TracksModel(QtCore.QAbstractTableModel):
             "bitrate": bitrate,
             "sample_rate": sample_rate,
             "duration": duration,
+            "date": stored_date
         }
 
     def emit_datachanged(self, row, column):

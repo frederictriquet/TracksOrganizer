@@ -74,6 +74,9 @@
                 "rename": {
                     "type": "string"
                 },
+                "rename2": {
+                    "type": "string"
+                },
                 "dustbin": {
                     "type": "string"
                 },
@@ -83,7 +86,8 @@
             },
             "required": [
                 "dustbin",
-                "rename"
+                "rename",
+                "rename2"
             ],
             "title": "Paths"
         }
