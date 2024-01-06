@@ -265,9 +265,10 @@ class Player(QtWidgets.QMainWindow):
         if key == QtCore.Qt.Key.Key_Tab.value:
             self.reserved_tab_handler()
         logger.debug(self.key_to_enum(key))
-        action = self.key_to_action(key)
-        if action:
-            action()
+        if not self.editableArtist.hasFocus() and not self.editableTitle.hasFocus():
+            action = self.key_to_action(key)
+            if action:
+                action()
 
     def reserved_tab_handler(self):
         """switch focus on editable inputs"""
@@ -486,7 +487,7 @@ class Player(QtWidgets.QMainWindow):
         fullname = track["fullname"]
         dest_filename = (
             f"{track['artist']} - {track['title']}.{track['ext']}" if rename else ""
-        )
+        ).replace('/','_')
         shutil.move(fullname, dest_dir / dest_filename)
         self.track_model.remove_track(self.current_index)
         self.select(increment=0)
