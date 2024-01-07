@@ -9,7 +9,7 @@ import Tools
 from Conf import Conf
 import Discogs
 
-PATTERN = r".*\.(mp3|flac|aif|aiff)"
+PATTERN = r"^.*\.(mp3|flac|aif|aiff)$"
 
 
 class Player(QtWidgets.QMainWindow):
@@ -179,6 +179,8 @@ class Player(QtWidgets.QMainWindow):
     def clear_filelist(self):
         self.track_model.clear()
         self.current_index = None
+        self.editableArtist.setText('')
+        self.editableTitle.setText('')
 
     def copy_to_clipboard(self):
         if self.current_index != None:
