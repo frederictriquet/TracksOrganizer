@@ -353,9 +353,9 @@ class Player(QtWidgets.QMainWindow):
     def load_dir(self, path: Path):
         try:
             logger.debug(path)
-            print(sorted(os.listdir(path)))
+            logger.debug(sorted(os.listdir(path), key=str.casefold))
             filepaths = Tools.scan_paths(
-                list(map(lambda f: path / f, sorted(os.listdir(path)))), PATTERN
+                list(map(lambda f: path / f, sorted(os.listdir(path), key=str.casefold))), PATTERN
             )
             self.load_files(filepaths)
 
