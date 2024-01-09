@@ -166,6 +166,7 @@ class Player(QtWidgets.QMainWindow):
         self.timer = QtCore.QTimer(self)
         self.timer.setInterval(100)
         self.timer.timeout.connect(self.update_ui_timer)
+        self.timer.stop()
 
     def update_title_and_artist(self):
         self.track_model.update_title_and_artist(
@@ -214,8 +215,9 @@ class Player(QtWidgets.QMainWindow):
         self.positionslider.setValue(media_pos)
         self.speedLabel.setText(f"speed: {self.current_replay_speed:.1f}")
 
-        time = f"{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {Tools.milliseconds_to_string(self.media.get_duration())}"
-        self.currenttimesLabel.setText(f"{time}")
+        if self.current_index is not None:
+            time = f"{Tools.milliseconds_to_string(self.mediaplayer.get_time())} / {Tools.milliseconds_to_string(self.media.get_duration())}"
+            self.currenttimesLabel.setText(f"{time}")
 
         # No need to call this function if nothing is played
         if not self.mediaplayer.is_playing():
