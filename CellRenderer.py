@@ -107,7 +107,7 @@ class RatingStyler(Styler):
 
 class DurationStyler(Styler):
     def tooltip(self, data, track):
-        return f"{Tools.milliseconds_to_string(data)}\n{track['bitrate']} kbits\n{track['filesize']}\n{track['date']}"
+        return f"{Tools.milliseconds_to_string(data)}\n{track['bitrate']} kbits\n{track['filesize']}\n{track['year']}"
 
     def display(self, data, track):
         return Tools.milliseconds_to_string(data)

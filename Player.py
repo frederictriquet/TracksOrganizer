@@ -95,6 +95,14 @@ class Player(QtWidgets.QMainWindow):
         self.htitlebox.addWidget(self.editableTitle)
         self.editableTitle.setEnabled(False)
 
+        self.hyearbox = QtWidgets.QHBoxLayout()
+        self.yearLabel = QtWidgets.QLabel("Year")
+        self.hyearbox.addWidget(self.yearLabel)
+        self.editableYear = QtWidgets.QLineEdit()
+        self.editableYear.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
+        self.hyearbox.addWidget(self.editableYear)
+        self.editableYear.setEnabled(False)
+
         self.infobox = QtWidgets.QHBoxLayout()
         self.currenttimesLabel = QtWidgets.QLabel()
         self.infobox.addWidget(self.currenttimesLabel)
@@ -106,6 +114,7 @@ class Player(QtWidgets.QMainWindow):
         self.vlabelbox = QtWidgets.QVBoxLayout()
         self.vlabelbox.addLayout(self.hartistbox)
         self.vlabelbox.addLayout(self.htitlebox)
+        self.vlabelbox.addLayout(self.hyearbox)
         self.vlabelbox.addLayout(self.infobox)
         # /LABELS
 
@@ -173,6 +182,7 @@ class Player(QtWidgets.QMainWindow):
             self.current_index,
             artist=self.editableArtist.text(),
             title=self.editableTitle.text(),
+            year=self.editableYear.text()
         )
 
     # HANDLERS
@@ -182,6 +192,7 @@ class Player(QtWidgets.QMainWindow):
         self.current_index = None
         self.editableArtist.setText('')
         self.editableTitle.setText('')
+        self.editableYear.setText('')
 
     def copy_to_clipboard(self):
         if self.current_index != None:
@@ -236,6 +247,7 @@ class Player(QtWidgets.QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.titleLabel.setFixedSize(self.artistLabel.size())  # force alignment
+        self.yearLabel.setFixedSize(self.artistLabel.size())  # force alignment
 
     def dropEvent(self, e):
         import urllib.parse
@@ -269,20 +281,25 @@ class Player(QtWidgets.QMainWindow):
         if key == QtCore.Qt.Key.Key_Tab.value:
             self.reserved_tab_handler()
         logger.debug(self.key_to_enum(key))
-        if not self.editableArtist.hasFocus() and not self.editableTitle.hasFocus():
+        if not self.editableArtist.hasFocus() and not self.editableTitle.hasFocus() and not self.editableYear.hasFocus():
             action = self.key_to_action(key)
             if action:
                 action()
 
     def reserved_tab_handler(self):
         """switch focus on editable inputs"""
-        if not self.editableArtist.hasFocus() and not self.editableTitle.hasFocus():
-            self.editableArtist.setFocus()
-        elif self.editableArtist.hasFocus():
-            self.editableArtist.clearFocus()
-            self.editableTitle.setFocus()
+        editables = [ self.editableArtist, self.editableTitle, self.editableYear ]
+        focused_item = [ (idx, item) for idx, item in enumerate(editables) if item.hasFocus() ]
+        if len(focused_item) > 1:
+            raise IndexError('multiple focus, how is it possible?')
+        if len(focused_item) == 0:
+            editables[0].setFocus()
+            return
+        idx, item = focused_item[0]
+        item.clearFocus()
+        if idx < len(editables) - 1:
+            editables[idx+1].setFocus()
         else:
-            self.editableTitle.clearFocus()
             self.update_title_and_artist()
 
     def item_clicked(self):
@@ -340,6 +357,8 @@ class Player(QtWidgets.QMainWindow):
             self.editableArtist.setEnabled(False)
             self.editableTitle.setText("")
             self.editableTitle.setEnabled(False)
+            self.editableYear.setText("")
+            self.editableYear.setEnabled(False)
             self.currenttimesLabel.setText("")
             self.currentbitrateLabel.setText("")
         else:
@@ -348,6 +367,8 @@ class Player(QtWidgets.QMainWindow):
             self.editableArtist.setEnabled(True)
             self.editableTitle.setText(track["title"])
             self.editableTitle.setEnabled(True)
+            self.editableYear.setText(track["year"])
+            self.editableYear.setEnabled(True)
             self.currenttimesLabel.setText("")
             self.currentbitrateLabel.setText(f"{track['bitrate']} kbits")
             self.currentfilesizeLabel.setText(f"{track['filesize']}")
@@ -376,6 +397,7 @@ class Player(QtWidgets.QMainWindow):
         self.mediaplayer.set_media(self.media)
         self.editableArtist.clearFocus()
         self.editableTitle.clearFocus()
+        self.editableYear.clearFocus()
 
     def select(self, index: int = None, increment: int = None):
         if index != None and increment != None:

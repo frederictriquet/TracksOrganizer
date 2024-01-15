@@ -97,7 +97,7 @@ class TracksModel(QtCore.QAbstractTableModel):
             "bitrate": bitrate,
             "sample_rate": sample_rate,
             "duration": duration,
-            "date": stored_date
+            "year": stored_date
         }
 
     def emit_datachanged(self, row, column):
@@ -153,19 +153,22 @@ class TracksModel(QtCore.QAbstractTableModel):
         title_str = track["title"].strip()
         genre_str = "-".join(sorted(track["genre"]))
         genre_str = "-".join([genre_str, f"*{track['rating']}"])
+        year_str = track["year"].strip()
         media = self.instance.media_new(track["fullname"])
         media.set_meta(vlc.Meta.Artist, artist_str)
         media.set_meta(vlc.Meta.Title, title_str)
         media.set_meta(vlc.Meta.Genre, genre_str)
+        media.set_meta(vlc.Meta.Date, year_str)
         logger.debug(genre_str)
         media.save_meta()
         del media
 
-    def update_title_and_artist(self, index: int, artist: str, title: str):
+    def update_title_and_artist(self, index: int, artist: str, title: str, year: str):
         track = self.get_track(index)
         if track == None:
             logger.critical(f"try to access track number {index} returns None")
             return
         track["artist"] = artist.strip()
         track["title"] = title.strip()
+        track["year"] = year.strip()
         self.save_track(index)
