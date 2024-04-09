@@ -5,7 +5,7 @@ from Logger import logger
 import Tools
 from pathlib import Path
 
-COLUMNS = ["filename", "genre", "rating", "duration"]
+COLUMNS = ["filename", "genre", "rating", "duration", "description"]
 GENRE_PATTERN = r"^([A-Z])(-[A-Z])*(-\*[0-5])$"
 
 
@@ -74,7 +74,8 @@ class TracksModel(QtCore.QAbstractTableModel):
         title = media.get_meta(vlc.Meta.Title) or ""
         filesize = Tools.bytes_to_mb(os.path.getsize(fullname))
         stored_genre = media.get_meta(vlc.Meta.Genre)
-        stored_date = media.get_meta(vlc.Meta.Date)
+        stored_date = media.get_meta(vlc.Meta.Date) or ""
+        stored_description = media.get_meta(vlc.Meta.Description) or ""
         duration = media.get_duration()
         del media
         genre = set()
@@ -97,6 +98,8 @@ class TracksModel(QtCore.QAbstractTableModel):
             "bitrate": bitrate,
             "sample_rate": sample_rate,
             "duration": duration,
+            "description": stored_description,
+            "previous_description": stored_description,
             "year": stored_date
         }
 
@@ -125,8 +128,10 @@ class TracksModel(QtCore.QAbstractTableModel):
             return
         track["rating"] = 0
         track["genre"] = set()
+        track["description"] = ''
         self.emit_datachanged(index, 1)  ## 1 = column 1 = genre
         self.emit_datachanged(index, 2)  ## 2 = column 2 = rating
+        self.emit_datachanged(index, 4)  ## 4 = column 4 = description
         self.save_track(index)
 
     def incr_rating(self, index: int, amount: int):
@@ -144,6 +149,16 @@ class TracksModel(QtCore.QAbstractTableModel):
         self.emit_datachanged(index, 2)  ## 2 = column 2 = rating
         self.save_track(index)
 
+    def set_rating(self, index: int, value: int):
+        track = self.get_track(index)
+        if track == None:
+            logger.critical(f"try to access track number {index} returns None")
+            return
+        rating = value % 6
+        track["rating"] = rating
+        self.emit_datachanged(index, 2)  ## 2 = column 2 = rating
+        self.save_track(index)
+
     def save_track(self, index: int):
         track = self.get_track(index)
         if track == None:
@@ -154,16 +169,27 @@ class TracksModel(QtCore.QAbstractTableModel):
         genre_str = "-".join(sorted(track["genre"]))
         genre_str = "-".join([genre_str, f"*{track['rating']}"])
         year_str = track["year"].strip()
+        description_str = track["description"].strip()
+
+        if description_str != track['previous_description'] and track['ext'] == 'flac':
+            from mutagen.flac import FLAC  
+            file = FLAC(track["fullname"])
+            file.delete()
+            logger.debug('deleted tags from FLAC file')
+            track['previous_description'] = description_str
+
         media = self.instance.media_new(track["fullname"])
         media.set_meta(vlc.Meta.Artist, artist_str)
         media.set_meta(vlc.Meta.Title, title_str)
         media.set_meta(vlc.Meta.Genre, genre_str)
+        media.set_meta(vlc.Meta.Description, description_str)
         media.set_meta(vlc.Meta.Date, year_str)
         logger.debug(genre_str)
-        media.save_meta()
+        res = media.save_meta()
+        logger.debug(f'Save meta = {res}')
         del media
 
-    def update_title_and_artist(self, index: int, artist: str, title: str, year: str):
+    def update_title_and_artist(self, index: int, artist: str, title: str, year: str, description: str):
         track = self.get_track(index)
         if track == None:
             logger.critical(f"try to access track number {index} returns None")
@@ -171,4 +197,7 @@ class TracksModel(QtCore.QAbstractTableModel):
         track["artist"] = artist.strip()
         track["title"] = title.strip()
         track["year"] = year.strip()
+        track["description"] = description.strip()
+        self.emit_datachanged(index, 4)  ## 4 = column 4 = description
+        logger.debug(f'new description = {description}')
         self.save_track(index)

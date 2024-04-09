@@ -1,5 +1,5 @@
 pyyaml
-pyqt6
+pyqt6==6.6.0
 #playsound
 #PyObjC
 python-vlc

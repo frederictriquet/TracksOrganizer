@@ -103,6 +103,14 @@ class Player(QtWidgets.QMainWindow):
         self.hyearbox.addWidget(self.editableYear)
         self.editableYear.setEnabled(False)
 
+        self.hdescriptionbox = QtWidgets.QHBoxLayout()
+        self.descriptionLabel = QtWidgets.QLabel("Description")
+        self.hdescriptionbox.addWidget(self.descriptionLabel)
+        self.editableDescription = QtWidgets.QLineEdit()
+        self.editableDescription.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
+        self.hdescriptionbox.addWidget(self.editableDescription)
+        self.editableDescription.setEnabled(False)
+
         self.infobox = QtWidgets.QHBoxLayout()
         self.currenttimesLabel = QtWidgets.QLabel()
         self.infobox.addWidget(self.currenttimesLabel)
@@ -115,6 +123,7 @@ class Player(QtWidgets.QMainWindow):
         self.vlabelbox.addLayout(self.hartistbox)
         self.vlabelbox.addLayout(self.htitlebox)
         self.vlabelbox.addLayout(self.hyearbox)
+        self.vlabelbox.addLayout(self.hdescriptionbox)
         self.vlabelbox.addLayout(self.infobox)
         # /LABELS
 
@@ -182,7 +191,8 @@ class Player(QtWidgets.QMainWindow):
             self.current_index,
             artist=self.editableArtist.text(),
             title=self.editableTitle.text(),
-            year=self.editableYear.text()
+            year=self.editableYear.text(),
+            description=self.editableDescription.text()
         )
 
     # HANDLERS
@@ -193,6 +203,7 @@ class Player(QtWidgets.QMainWindow):
         self.editableArtist.setText('')
         self.editableTitle.setText('')
         self.editableYear.setText('')
+        self.editableDescription.setText('')
 
     def copy_to_clipboard(self):
         if self.current_index != None:
@@ -246,8 +257,11 @@ class Player(QtWidgets.QMainWindow):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.titleLabel.setFixedSize(self.artistLabel.size())  # force alignment
-        self.yearLabel.setFixedSize(self.artistLabel.size())  # force alignment
+        size = self.descriptionLabel.size()
+        self.artistLabel.setFixedSize(size)  # force alignment
+        self.titleLabel.setFixedSize(size)  # force alignment
+        self.yearLabel.setFixedSize(size)  # force alignment
+        # self.descriptionLabel.setFixedSize(size)  # force alignment
 
     def dropEvent(self, e):
         import urllib.parse
@@ -281,24 +295,26 @@ class Player(QtWidgets.QMainWindow):
         if key == QtCore.Qt.Key.Key_Tab.value:
             self.reserved_tab_handler()
         logger.debug(self.key_to_enum(key))
-        if not self.editableArtist.hasFocus() and not self.editableTitle.hasFocus() and not self.editableYear.hasFocus():
+        if not self.editableArtist.hasFocus() and not self.editableTitle.hasFocus() and not self.editableYear.hasFocus() and not self.editableDescription.hasFocus():
             action = self.key_to_action(key)
             if action:
                 action()
 
     def reserved_tab_handler(self):
         """switch focus on editable inputs"""
-        editables = [ self.editableArtist, self.editableTitle, self.editableYear ]
+        editables = [ self.editableArtist, self.editableTitle, self.editableYear, self.editableDescription ]
         focused_item = [ (idx, item) for idx, item in enumerate(editables) if item.hasFocus() ]
         if len(focused_item) > 1:
             raise IndexError('multiple focus, how is it possible?')
         if len(focused_item) == 0:
             editables[0].setFocus()
+            editables[0].selectAll()
             return
         idx, item = focused_item[0]
         item.clearFocus()
         if idx < len(editables) - 1:
             editables[idx+1].setFocus()
+            editables[idx+1].selectAll()
         else:
             self.update_title_and_artist()
 
@@ -359,6 +375,8 @@ class Player(QtWidgets.QMainWindow):
             self.editableTitle.setEnabled(False)
             self.editableYear.setText("")
             self.editableYear.setEnabled(False)
+            self.editableDescription.setText("")
+            self.editableDescription.setEnabled(False)
             self.currenttimesLabel.setText("")
             self.currentbitrateLabel.setText("")
         else:
@@ -369,6 +387,8 @@ class Player(QtWidgets.QMainWindow):
             self.editableTitle.setEnabled(True)
             self.editableYear.setText(track["year"])
             self.editableYear.setEnabled(True)
+            self.editableDescription.setText(track["description"])
+            self.editableDescription.setEnabled(True)
             self.currenttimesLabel.setText("")
             self.currentbitrateLabel.setText(f"{track['bitrate']} kbits")
             self.currentfilesizeLabel.setText(f"{track['filesize']}")
@@ -398,6 +418,7 @@ class Player(QtWidgets.QMainWindow):
         self.editableArtist.clearFocus()
         self.editableTitle.clearFocus()
         self.editableYear.clearFocus()
+        self.editableDescription.clearFocus()
 
     def select(self, index: int = None, increment: int = None):
         if index != None and increment != None:
@@ -489,6 +510,10 @@ class Player(QtWidgets.QMainWindow):
         if self.current_index != None:
             self.track_model.incr_rating(self.current_index, amount)
 
+    def set_rating(self, value):
+        if self.current_index != None:
+            self.track_model.set_rating(self.current_index, value)
+
     def set_style(self, style):
         # print(f'style: {style}')
         if self.current_index != None:
@@ -503,17 +528,42 @@ class Player(QtWidgets.QMainWindow):
             track = self.track_model.get_track(self.current_index)
             Discogs.ask(track['artist'],track['title'])
 
+    def import_old_tags(self):
+        if self.current_index is None:
+            return
+        track = self.track_model.get_track(self.current_index)
+        description = track["description"]
+        TAGS={"Catas": "H", "Deep": "D", "Hard": "P", "Trance": "T", "Fun": "F", "A Cappella": "A"}
+        d = list(filter(lambda x: x in TAGS, description.split(',')))
+        if len(d) == 0:
+            return
+        try:
+            rating = int(description.split(',')[0])
+            if rating > 5:
+                rating = 0
+        except ValueError:
+            rating = 0
+        if rating == 0:
+            return
+        self.clear_metas()
+        for g in d:
+            self.set_style(TAGS[g])
+
+        self.set_rating(rating)
+
     # / KEYBOARD ACTIONS
 
     def move_file(self, dest_dir: Path, rename: bool):
         if self.current_index == None:
             return
-        self.stop()
         track = self.track_model.get_track(self.current_index)
         fullname = track["fullname"]
         dest_filename = (
-            f"{track['artist']} - {track['title']}.{track['ext']}" if rename else ""
-        ).replace('/','_')
+            f"{track['artist']} - {track['title']}.{track['ext']}" if rename else track['filename']
+        ).replace('/','⁄') # replace with "not a real slash"
+        if os.path.exists(dest_dir / dest_filename):
+            return
+        self.stop()
         shutil.move(fullname, dest_dir / dest_filename)
         self.track_model.remove_track(self.current_index)
         self.select(increment=0)

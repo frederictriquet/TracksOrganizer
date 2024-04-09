@@ -19,6 +19,7 @@ class CellRenderer:
             "genre": GenreStyler(),
             "rating": RatingStyler(),
             "duration": DurationStyler(),
+            "description": DescriptionStyler(),
         }
 
     def get_style(self, track, column, role):
@@ -114,3 +115,6 @@ class DurationStyler(Styler):
 
     def alignment(self, data, track):
         return QtCore.Qt.AlignmentFlag.AlignVCenter + QtCore.Qt.AlignmentFlag.AlignRight
+
+class DescriptionStyler(Styler):
+    pass
