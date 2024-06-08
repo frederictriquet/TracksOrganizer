@@ -1,7 +1,10 @@
 {
-  "window.zoomLevel": 1,
+  "window.zoomLevel": 0.0910347954528925,
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "mikoz.black-py"
   },
-  "python.formatting.provider": "none"
+  "python.formatting.provider": "none",
+  "files.associations": {
+    "plyconfig.json": "jsonc"
+  }
 }

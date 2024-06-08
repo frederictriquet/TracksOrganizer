@@ -20,7 +20,7 @@ def scan_paths(paths: list[Path], file_pattern: str) -> list[Path]:
             if p.is_file() and r.match(str(p)):
                 res.append(p)
             elif p.is_dir():
-                children = list(p.iterdir())
+                children = sorted(list(p.iterdir()), key=lambda p: str.casefold(str(p)))
                 res.extend(scan_paths(children, file_pattern))
     except PermissionError as e:
         logger.error(e)

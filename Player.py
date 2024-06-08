@@ -8,6 +8,7 @@ import vlc
 import Tools
 from Conf import Conf
 import Discogs
+import subprocess
 
 PATTERN = r"^.*\.(mp3|flac|aif|aiff)$"
 
@@ -269,12 +270,13 @@ class Player(QtWidgets.QMainWindow):
 
         # drag and drop with filenames containing spaces replaces them with '%20'
         # and other character encondings
+        print(e.mimeData().text())
         dropped_data = urllib.parse.unquote(e.mimeData().text())
         # logger.debug(f'---{dropped_data}---')
         dropped_data = dropped_data.replace("\r", "")
         dropped_paths = list(
             map(
-                lambda f: Path(f.replace("file://", "")),
+                lambda f: Path(f.replace("file://", "").split('?')[0]),
                 filter(lambda f: len(f) > 0, dropped_data.split("\n")),
             )
         )
@@ -502,6 +504,10 @@ class Player(QtWidgets.QMainWindow):
         if conf_path in Conf.conf_data["paths"]:
             self.move_file(Path(Conf.conf_data["paths"][conf_path]), rename)
 
+    def link_to(self, conf_path: str):
+        if conf_path in Conf.conf_data["paths"]:
+            self.link_file(Path(Conf.conf_data["paths"][conf_path]))
+
     def clear_metas(self):
         if self.current_index != None:
             self.track_model.clear_metas(self.current_index)
@@ -569,3 +575,39 @@ class Player(QtWidgets.QMainWindow):
         self.select(increment=0)
         if self.load_current():
             self.play()
+
+    def link_file(self, dest_dir: Path):
+        if self.current_index == None:
+            return
+        track = self.track_model.get_track(self.current_index)
+        fullname = track["fullname"]
+        dest_filename = track['filename']
+
+        if os.path.exists(dest_dir / dest_filename):
+            logger.debug('Link not created: destination exists')
+            return
+
+        os.symlink(fullname, dest_dir / dest_filename, target_is_directory=False)
+        logger.debug('Link created')
+
+    def make_insta(self):
+        if self.current_index == None:
+            return
+        print(int(self.mediaplayer.get_time()/1000))
+        track = self.track_model.get_track(self.current_index)
+        fullname = track["fullname"]
+        print(['./video.sh', str(fullname), int(self.mediaplayer.get_time()/1000)])
+        retro = ''
+        if 'R' in track["genre"]:
+            retro = '-retro'
+        if 'H' in track["genre"]:
+            style = 'house'
+        elif 'G' in track["genre"]:
+            style = 'garden'
+        elif 'D' in track["genre"]:
+            style = 'deep'
+        elif 'T' in track["genre"]:
+            style = 'trance'
+        else:
+            style = 'deep'
+        subprocess.run(['./video.sh', str(fullname), str(int(self.mediaplayer.get_time()/1000)), style+retro])

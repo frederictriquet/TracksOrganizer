@@ -10,8 +10,8 @@ paths:
   # tracks: "/Users/fred/Music/GOOD/RECENT/"
   # tracks: "/Users/fred/Code/PyQt/tracks/"
   tracks: "/Users/fred/Music/Soulseek/"
-  rename: "/Users/fred/Music/GOOD/PROCESSED/"
-  # rename: "/Users/fred/Music/GOOD/RECENT/"
+  rename: "/Users/fred/Music/GOOD/2024-06/"
+  # rename: "/Users/fred/Music/GOOD/NO_SHARE/"
   # rename: "/Users/fred/Music/4 GOODNAMES/"
   retro: "/Users/fred/Music/GOOD/RETRO/"
   retro2: "/Users/fred/Music/GOOD/RECENT_LOW_QUALITY/"
@@ -20,6 +20,7 @@ paths:
   # dustbin: "/Users/fred/Code/PyQt/dustbin/"
   dustbin: "/Users/fred/Music/dustbin/"
   # keep: "/Users/fred/Music/000 pré-écouté/"
+  select: "/Users/fred/Music/GOOD/SELECT/"
 conf:
   auto_play_next_track: true
   # log_level: ERROR
@@ -64,8 +65,9 @@ actions:
 
   Key_Backspace: move_to('dustbin')
   Key_At: rename_to('rename')
-  Key_ParenRight: rename_to('retro')
-  Key_Less: rename_to('retro2')
+  # Key_ParenRight: rename_to('retro')
+  # Key_Less: rename_to('retro2')
+  Key_S: link_to('select')
 
   Key_Plus: incr_rating
   Key_Minus: incr_rating(-1)
@@ -86,14 +88,18 @@ actions:
   Key_R: set_style('R') # Retro
   Key_T: set_style('T') # Trance
   Key_W: set_style('W') # W
+  Key_B: set_style('B') # Banger
 
   # Key_Up: incr_replay_speed(0.1)
   # Key_Down: incr_replay_speed(-0.1)
   Key_Up: play_previous_track
   Key_Down: play_next_track
 
+  Key_I: make_insta
+
 genres:
   A: A Cappella
+  B: Banger
   C: Classic
   D: Deep
   F: Funny
@@ -105,3 +111,5 @@ genres:
   T: Trance
   U: Unclassable
   W: Weed
+# update track set rating=cast(substr(genre,-1) as integer)*20
+# select filename , timeLastPlayed from Track t  ORDER by timeLastPlayed desc limit 20
