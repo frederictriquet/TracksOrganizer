@@ -1,13 +1,27 @@
 #!/usr/bin/env bash
 rm -f out.mp4 out.mp3 out.txt
 AUDIO="$1"
-START=$2
-STYLE=$3
-VIDEO="~/Movies/CapCut/template_insta.mp4"
-TEMPLATE=./Templates/$STYLE.mp4
+ARTIST_TITLE="$2"
+START=$3
+STYLE=$4
+TEMPLATES=(./Templates/${STYLE}[0-9]*.mp4)
+N=$[$RANDOM % ${#TEMPLATES[@]}]
+TEMPLATE=${TEMPLATES[$N]}
 FILENAME=$(basename -- "$AUDIO")
 BASENAME="${FILENAME%.*}"
-echo $BASENAME > out.txt
+echo $ARTIST_TITLE > out.txt
+# echo test ${TEMPLATES[0]}
+# echo test ${TEMPLATES[1]}
+# echo test ${TEMPLATES[2]}
+# echo AUDIO $AUDIO
+# echo START $START
+# echo STYLE $STYLE
+# echo TEMPLATES $TEMPLATES
+# echo N $N
+# echo TEMPLATE $TEMPLATE
+# echo FILENAME $FILENAME
+# echo BASENAME $BASENAME
+# exit 0
 
 ffmpeg -i "$AUDIO" \
     -ss $START -t 00:00:30 \
@@ -18,7 +32,7 @@ ffmpeg -an -i $TEMPLATE \
     -af "afade=t=in:st=0:d=2,afade=t=out:st=28:d=2" \
     out.mp4
 
-mv out.mp4 ~/Movies/Insta/"$BASENAME".mp4
+mv out.mp4 ~/Movies/Insta/"$ARTIST_TITLE".mp4
     # -vf "drawtext=text='StackOverflow':fontfile=/path/to/font.ttf:fontsize=30:fontcolor=white:x=100:y=100" \
     # -c:v copy \
 
@@ -33,3 +47,4 @@ mv out.mp4 ~/Movies/Insta/"$BASENAME".mp4
 #    -map "[0:v]" -map "[1:a]" \
 
 # https://stackoverflow.com/questions/17623676/text-on-video-ffmpeg
+echo "DONE"

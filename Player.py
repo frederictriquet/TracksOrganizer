@@ -596,18 +596,22 @@ class Player(QtWidgets.QMainWindow):
         print(int(self.mediaplayer.get_time()/1000))
         track = self.track_model.get_track(self.current_index)
         fullname = track["fullname"]
-        print(['./video.sh', str(fullname), int(self.mediaplayer.get_time()/1000)])
-        retro = ''
+        artist_title = f"{track['artist']} - {track['title']}".replace('/','⁄') # replace with "not a real slash"
+        print(['./video.sh', str(fullname), artist_title, int(self.mediaplayer.get_time()/1000)])
+        suffix = ''
         if 'R' in track["genre"]:
-            retro = '-retro'
-        if 'H' in track["genre"]:
-            style = 'house'
-        elif 'G' in track["genre"]:
+            suffix = '-retro'
+        elif 'P' in track["genre"]:
+            suffix = '-power'
+
+        if 'G' in track["genre"]:
             style = 'garden'
         elif 'D' in track["genre"]:
             style = 'deep'
+        elif 'H' in track["genre"]:
+            style = 'house'
         elif 'T' in track["genre"]:
             style = 'trance'
         else:
             style = 'deep'
-        subprocess.run(['./video.sh', str(fullname), str(int(self.mediaplayer.get_time()/1000)), style+retro])
+        subprocess.run(['./video.sh', str(fullname), artist_title, str(int(self.mediaplayer.get_time()/1000)), style+suffix])

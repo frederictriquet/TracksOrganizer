@@ -10,7 +10,7 @@ paths:
   # tracks: "/Users/fred/Music/GOOD/RECENT/"
   # tracks: "/Users/fred/Code/PyQt/tracks/"
   tracks: "/Users/fred/Music/Soulseek/"
-  rename: "/Users/fred/Music/GOOD/2024-06/"
+  rename: "/Users/fred/Music/GOOD/2024-07/"
   # rename: "/Users/fred/Music/GOOD/NO_SHARE/"
   # rename: "/Users/fred/Music/4 GOODNAMES/"
   retro: "/Users/fred/Music/GOOD/RETRO/"
@@ -23,8 +23,8 @@ paths:
   select: "/Users/fred/Music/GOOD/SELECT/"
 conf:
   auto_play_next_track: true
-  # log_level: ERROR
-  log_level: DEBUG
+  log_level: ERROR
+  # log_level: DEBUG
 actions:
   Key_Escape: quit
   Key_Space: play_next_track
