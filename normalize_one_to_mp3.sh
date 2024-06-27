@@ -9,6 +9,12 @@ OUT_FILE="${DST_DIR}/${FILENAME%.*}.mp3"
 # echo ${OUT_FILE}
 # echo $EXT
 
+if [ -f "$OUT_FILE" ]
+then
+    echo Already exists: $OUT_FILE
+    exit
+fi
+
 db=$(ffmpeg -i "$SRC_FILE" -vn -filter:a volumedetect -f null /dev/null 2>&1 | grep max_volume | cut -d: -f2 | cut -d' ' -f2)
 # echo $(basename "$SRC_FILE") $db
 if [ 1 -eq $(bc <<< "$db < 0.0") ]
@@ -24,7 +30,7 @@ fi
 if [[ $db == '' && $EXT == 'mp3' ]]
 then
     echo COPY
-    [ -f "$OUT_FILE" ] || cp "$SRC_FILE" "$OUT_FILE"
+    cp "$SRC_FILE" "$OUT_FILE"
 elif [[ $db == '' ]]
 then
     echo CONVERT ONLY
