@@ -223,6 +223,10 @@ class Player(QtWidgets.QMainWindow):
             painter = QtGui.QPainter(canvas)
             track = self.track_model.get_track(self.current_index)
             sound_data = track['sound_data']
+            if sound_data is None:
+                self.track_model.populate_soud_data(self.current_index)
+                track = self.track_model.get_track(self.current_index)
+                sound_data = track['sound_data']
             for x in range(800):
                 painter.drawLine(x, 30, x, 30-sound_data[x]*30)
             painter.end()
@@ -237,7 +241,6 @@ class Player(QtWidgets.QMainWindow):
         self.editableDescription.setText('')
 
     def copy_to_clipboard(self):
-        self.draw_waveform()
         if self.current_index != None:
             text = f"{self.editableArtist.text()} {self.editableTitle.text()}"
             self.app.clipboard().setText(text)
