@@ -1,3 +1,5 @@
+from random import random
+import subprocess
 from PyQt6 import QtCore
 import os, vlc, re
 from CellRenderer import CellRenderer
@@ -86,6 +88,23 @@ class TracksModel(QtCore.QAbstractTableModel):
                 stored_rating = int(l[-1][1])
                 l.pop()
             genre = set(l)
+        # sound_data = [ random() for _ in range(800) ]
+        result = subprocess.run(["ffmpeg", "-i", str(fullname), "-ac", "1", "-filter:a", "aresample=250", "-map", "0:a", "-c:a", "pcm_u8", "-f", "data", "-"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # print(result.stdout)
+        # print(len(result.stdout), duration)
+        l = len(result.stdout)
+        nb_sample_for_1tick = int(l / 800)
+        sound_data = []
+        for i in range(800):
+            M = 0
+            for j in range(nb_sample_for_1tick):            
+                s = result.stdout[int(i*nb_sample_for_1tick + j)]
+                # sum += (s-128)/128.0
+                M = max(M, (s-128)/128.0, -(s-128)/128.0)
+            # sum /= nb_sample_for_1tick
+            # sound_data.append(sum)
+            sound_data.append(M)
+        # print(sound_data)
         return {
             "filename": filename,
             "genre": genre,
@@ -100,7 +119,8 @@ class TracksModel(QtCore.QAbstractTableModel):
             "duration": duration,
             "description": stored_description,
             "previous_description": stored_description,
-            "year": stored_date
+            "year": stored_date,
+            "sound_data": sound_data
         }
 
     def emit_datachanged(self, row, column):

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from random import random
 import shutil
 from PyQt6 import QtWidgets, QtCore, QtGui
 from Logger import logger, set_log_level
@@ -48,6 +49,12 @@ class Player(QtWidgets.QMainWindow):
         self.filelist.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
         header = self.filelist.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
+
+        # waveform
+        self.waveform = QtWidgets.QLabel()
+        canvas = QtGui.QPixmap(800, 30)
+        canvas.fill(QtCore.Qt.GlobalColor.white)
+        self.waveform.setPixmap(canvas)
 
         self.positionslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
         self.positionslider.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -134,6 +141,7 @@ class Player(QtWidgets.QMainWindow):
 
         self.vboxlayout = QtWidgets.QVBoxLayout()
         self.vboxlayout.addWidget(self.filelist)
+        self.vboxlayout.addWidget(self.waveform)
         self.vboxlayout.addWidget(self.positionslider)
         self.vboxlayout.addLayout(self.lowzone)
 
@@ -198,6 +206,28 @@ class Player(QtWidgets.QMainWindow):
 
     # HANDLERS
 
+    def draw_something(self):
+        canvas = self.waveform.pixmap()
+        canvas.fill(QtCore.Qt.GlobalColor.white)
+        painter = QtGui.QPainter(canvas)
+        n = random()
+        for x in range(800):
+            painter.drawLine(x, 30, x, (n*x)%30)
+        painter.end()
+        self.waveform.setPixmap(canvas)
+
+    def draw_waveform(self):
+        canvas = self.waveform.pixmap()
+        canvas.fill(QtCore.Qt.GlobalColor.white)
+        if self.current_index != None:
+            painter = QtGui.QPainter(canvas)
+            track = self.track_model.get_track(self.current_index)
+            sound_data = track['sound_data']
+            for x in range(800):
+                painter.drawLine(x, 30, x, 30-sound_data[x]*30)
+            painter.end()
+        self.waveform.setPixmap(canvas)
+
     def clear_filelist(self):
         self.track_model.clear()
         self.current_index = None
@@ -207,6 +237,7 @@ class Player(QtWidgets.QMainWindow):
         self.editableDescription.setText('')
 
     def copy_to_clipboard(self):
+        self.draw_waveform()
         if self.current_index != None:
             text = f"{self.editableArtist.text()} {self.editableTitle.text()}"
             self.app.clipboard().setText(text)
@@ -421,6 +452,7 @@ class Player(QtWidgets.QMainWindow):
         self.editableTitle.clearFocus()
         self.editableYear.clearFocus()
         self.editableDescription.clearFocus()
+        self.draw_waveform()
 
     def select(self, index: int = None, increment: int = None):
         if index != None and increment != None:
