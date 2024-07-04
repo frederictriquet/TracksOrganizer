@@ -34,6 +34,7 @@ class Player(QtWidgets.QMainWindow):
         self.current_replay_speed = 1.0
         self.setWindowTitle("Tracks Organizer")
         self.load_current_conffile()
+        self.new_width = 1
 
     def init_create_ui(self):
         self.widget = QtWidgets.QWidget(self)
@@ -55,6 +56,7 @@ class Player(QtWidgets.QMainWindow):
         canvas = QtGui.QPixmap(800, 30)
         canvas.fill(QtCore.Qt.GlobalColor.white)
         self.waveform.setPixmap(canvas)
+        # self.waveform.clear()
 
         self.positionslider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal, self)
         self.positionslider.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -227,8 +229,20 @@ class Player(QtWidgets.QMainWindow):
                 self.track_model.populate_soud_data(self.current_index)
                 track = self.track_model.get_track(self.current_index)
                 sound_data = track['sound_data']
-            for x in range(800):
-                painter.drawLine(x, 30, x, 30-sound_data[x]*30)
+            data_len = len(sound_data)
+            img_width = self.new_width
+            samples_per_pixel = data_len / img_width
+            for x in range(0,img_width,3):
+                M = 0
+                Z = int((x-0.5)*samples_per_pixel)
+                ZZ = int((x+0.5)*samples_per_pixel)
+                for j in range(max(0,Z), min(data_len,ZZ)):            
+                    s = sound_data[j]
+                    # sum += (s-128)/128.0
+                    M = max(M, (s-128)/128.0, -(s-128)/128.0)
+                # sum /= nb_sample_for_1tick
+                y = M
+                painter.drawLine(x, 30, x, 30-y*30)
             painter.end()
         self.waveform.setPixmap(canvas)
 
@@ -292,11 +306,20 @@ class Player(QtWidgets.QMainWindow):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        self.new_width = event.size().width() - 24 - 4
         size = self.descriptionLabel.size()
         self.artistLabel.setFixedSize(size)  # force alignment
         self.titleLabel.setFixedSize(size)  # force alignment
         self.yearLabel.setFixedSize(size)  # force alignment
         # self.descriptionLabel.setFixedSize(size)  # force alignment
+
+        # waveform
+        self.waveform.clear()
+        # self.waveform = QtWidgets.QLabel()
+        canvas = QtGui.QPixmap(self.new_width, 30)
+        canvas.fill(QtCore.Qt.GlobalColor.white)
+        self.waveform.setPixmap(canvas)
+        self.draw_waveform()
 
     def dropEvent(self, e):
         import urllib.parse
