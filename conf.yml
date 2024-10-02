@@ -10,17 +10,18 @@ paths:
   # tracks: "/Users/fred/Music/GOOD/RECENT/"
   # tracks: "/Users/fred/Code/PyQt/tracks/"
   tracks: "/Users/fred/Music/Soulseek/"
-  rename: "/Users/fred/Music/GOOD/2024-07/"
+  # tracks: "/Users/fred/Music/TMP/"
+  rename: "/Users/fred/Music/GOOD/2024-10/"
   # rename: "/Users/fred/Music/GOOD/NO_SHARE/"
   # rename: "/Users/fred/Music/4 GOODNAMES/"
-  retro: "/Users/fred/Music/GOOD/RETRO/"
-  retro2: "/Users/fred/Music/GOOD/RECENT_LOW_QUALITY/"
+  # retro: "/Users/fred/Music/GOOD/RETRO/"
+  # retro2: "/Users/fred/Music/GOOD/RECENT_LOW_QUALITY/"
   # rename: "/Users/fred/Music/3 A_RENOMMER/"
   # rename: "/Users/fred/Code/PyQt/tracks/renamed"
   # dustbin: "/Users/fred/Code/PyQt/dustbin/"
   dustbin: "/Users/fred/Music/dustbin/"
   # keep: "/Users/fred/Music/000 pré-écouté/"
-  select: "/Users/fred/Music/GOOD/SELECT/"
+  select: "/Users/fred/Music/MusicForMovies/"
 conf:
   auto_play_next_track: true
   log_level: ERROR
@@ -67,7 +68,9 @@ actions:
   Key_At: rename_to('rename')
   # Key_ParenRight: rename_to('retro')
   # Key_Less: rename_to('retro2')
-  Key_S: link_to('select')
+  # Key_S: link_to('select')
+  # Key_S: copy_to('select')
+  Key_X: rename_to('select')
 
   Key_Plus: incr_rating
   Key_Minus: incr_rating(-1)
@@ -77,18 +80,21 @@ actions:
   # Key_Less: clear_metas
 
   Key_A: set_style('A') # A Cappella
+  Key_B: set_style('B') # Banger
   Key_C: set_style('C') # Classic
   Key_D: set_style('D') # Deep
   Key_F: set_style('F') # Funny
   Key_G: set_style('G') # Garden
   Key_H: set_style('H') # House 
   Key_L: set_style('L') # Loop 
+  Key_N: set_style('N') # Namaste 
   Key_U: set_style('U') # Unclassable 
   Key_P: set_style('P') # Power
   Key_R: set_style('R') # Retro
   Key_T: set_style('T') # Trance
   Key_W: set_style('W') # W
-  Key_B: set_style('B') # Banger
+
+  Key_Z: set_style('I') # Ibiza
 
   # Key_Up: incr_replay_speed(0.1)
   # Key_Down: incr_replay_speed(-0.1)
@@ -105,7 +111,9 @@ genres:
   F: Funny
   G: Garden
   H: House
+  I: Ibiza
   L: Loop
+  N: Namaste
   P: Power
   R: Retro
   T: Trance

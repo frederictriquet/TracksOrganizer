@@ -219,6 +219,7 @@ class Player(QtWidgets.QMainWindow):
         self.waveform.setPixmap(canvas)
 
     def draw_waveform(self):
+        return
         canvas = self.waveform.pixmap()
         canvas.fill(QtCore.Qt.GlobalColor.white)
         if self.current_index != None:
@@ -232,7 +233,9 @@ class Player(QtWidgets.QMainWindow):
             data_len = len(sound_data)
             img_width = self.new_width
             samples_per_pixel = data_len / img_width
-            for x in range(0,img_width,3):
+            samples_per_pixel = 100
+            print(f'{samples_per_pixel=}')
+            for x in range(0,img_width,5):
                 M = 0
                 Z = int((x-0.5)*samples_per_pixel)
                 ZZ = int((x+0.5)*samples_per_pixel)
@@ -242,7 +245,8 @@ class Player(QtWidgets.QMainWindow):
                     M = max(M, (s-128)/128.0, -(s-128)/128.0)
                 # sum /= nb_sample_for_1tick
                 y = M
-                painter.drawLine(x, 30, x, 30-y*30)
+                # painter.drawLine(x, 30, x, 30-y*30)
+                painter.drawLine(x, 15+y*15, x, 15-y*15)
             painter.end()
         self.waveform.setPixmap(canvas)
 
@@ -562,6 +566,10 @@ class Player(QtWidgets.QMainWindow):
         if conf_path in Conf.conf_data["paths"]:
             self.move_file(Path(Conf.conf_data["paths"][conf_path]), rename)
 
+    def copy_to(self, conf_path: str):
+        if conf_path in Conf.conf_data["paths"]:
+            self.copy_file(Path(Conf.conf_data["paths"][conf_path]))
+
     def link_to(self, conf_path: str):
         if conf_path in Conf.conf_data["paths"]:
             self.link_file(Path(Conf.conf_data["paths"][conf_path]))
@@ -633,6 +641,20 @@ class Player(QtWidgets.QMainWindow):
         self.select(increment=0)
         if self.load_current():
             self.play()
+
+    def copy_file(self, dest_dir: Path):
+        if self.current_index == None:
+            return
+        track = self.track_model.get_track(self.current_index)
+        fullname = track["fullname"]
+        dest_filename = track['filename']
+
+        if os.path.exists(dest_dir / dest_filename):
+            logger.debug('Link not created: destination exists')
+            return
+
+        shutil.copy(fullname, dest_dir / dest_filename)
+        logger.debug('File copied')
 
     def link_file(self, dest_dir: Path):
         if self.current_index == None:

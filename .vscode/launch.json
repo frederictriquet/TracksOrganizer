@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "Organizer",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "console": "integratedTerminal",
             "program": "organizer.py",
