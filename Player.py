@@ -70,6 +70,13 @@ class Player(QtWidgets.QMainWindow):
         # BUTTONS
         self.vbuttonbox = QtWidgets.QVBoxLayout()
         self.playbutton = QtWidgets.QPushButton("Play")
+        self.playbutton.setStyleSheet(
+            "background-color: red;"
+            "font-family: times;"
+            "font-size: 20px;"
+            "width: 200px;"
+            "height: 80px;"
+            )
         self.vbuttonbox.addWidget(self.playbutton)
         self.playbutton.clicked.connect(self.play_pause)
         self.playbutton.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
@@ -192,10 +199,17 @@ class Player(QtWidgets.QMainWindow):
 
         # /TOOLBAR
 
-        self.timer = QtCore.QTimer(self)
-        self.timer.setInterval(100)
-        self.timer.timeout.connect(self.update_ui_timer)
-        self.timer.stop()
+        self.timer_ui = QtCore.QTimer(self)
+        self.timer_ui.setInterval(100)
+        self.timer_ui.timeout.connect(self.update_ui_timer)
+        self.timer_ui.stop()
+
+        self.timer_tick = QtCore.QTimer(self)
+        self.timer_tick.setInterval(100)
+        self.timer_tick.timeout.connect(self.update_tick_timer)
+        self.timer_tick.start()
+        self.nb_ticks = 10
+        self.jump_step_factor = 1
 
     def update_title_and_artist(self):
         self.track_model.update_title_and_artist(
@@ -299,7 +313,7 @@ class Player(QtWidgets.QMainWindow):
             if self.autoplaycheckbox.isChecked():
                 self.play_next_track()
             else:
-                self.timer.stop()
+                self.timer_ui.stop()
                 self.playbutton.setText("Play")
 
                 # After the video finished, the play button stills shows "Pause",
@@ -307,6 +321,13 @@ class Player(QtWidgets.QMainWindow):
                 # This fixes that "bug".
                 if not self.is_paused:
                     self.stop()
+
+    def update_tick_timer(self):
+        self.nb_ticks -= 1
+        if self.nb_ticks < 0:
+            self.nb_ticks = 0
+            self.jump_step_factor = 1
+        logger.debug(self.nb_ticks)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -397,7 +418,7 @@ class Player(QtWidgets.QMainWindow):
 
     def stop(self):
         self.mediaplayer.stop()
-        self.timer.stop()
+        self.timer_ui.stop()
         self.playbutton.setText("Play")
 
     def set_position_from_slider(self):
@@ -521,13 +542,13 @@ class Player(QtWidgets.QMainWindow):
         self.mediaplayer.pause()
         self.playbutton.setText("Play")
         self.is_paused = True
-        self.timer.stop()
+        self.timer_ui.stop()
 
     def play(self):
         self.current_replay_speed = 1.0
         self.mediaplayer.play()
         self.playbutton.setText("Pause")
-        self.timer.start()
+        self.timer_ui.start()
         self.is_paused = False
 
     # KEYBOARD ACTIONS
@@ -547,14 +568,17 @@ class Player(QtWidgets.QMainWindow):
             self.play()
 
     def set_position(self, pos: float):
-        self.timer.stop()
+        self.timer_ui.stop()
         self.mediaplayer.set_position(pos)
-        self.timer.start()
+        self.timer_ui.start()
 
     def step_backward(self, seconds: int):
         self.step_forward(-seconds)
 
     def step_forward(self, seconds: int):
+        seconds *= self.jump_step_factor
+        self.jump_step_factor += 1
+        self.nb_ticks = 10
         self.set_position(
             (self.mediaplayer.get_time() + seconds * 1000) / self.media.get_duration()
         )
