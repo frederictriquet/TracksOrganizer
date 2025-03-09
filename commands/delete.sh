@@ -1,0 +1,1 @@
+curl -d '{"command":"Key_Backspace"}' http://localhost:8000

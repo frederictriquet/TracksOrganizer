@@ -1,0 +1,1 @@
+curl -d '{"command":"Key_Minus"}' http://localhost:8000

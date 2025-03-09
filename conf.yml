@@ -1,8 +1,3 @@
-
-
-# 09 74 75 51 10
-# référence 762977
-
 # yaml-language-server: $schema=./confSchema.json
 
 ---
@@ -11,7 +6,7 @@ paths:
   # tracks: "/Users/fred/Code/PyQt/tracks/"
   tracks: "/Users/fred/Music/Soulseek/"
   # tracks: "/Users/fred/Music/TMP/"
-  rename: "/Users/fred/Music/GOOD/2024-10/"
+  rename: "/Users/fred/Music/GOOD/2025-02/"
   # rename: "/Users/fred/Music/GOOD/NO_SHARE/"
   # rename: "/Users/fred/Music/4 GOODNAMES/"
   # retro: "/Users/fred/Music/GOOD/RETRO/"
@@ -21,18 +16,18 @@ paths:
   # dustbin: "/Users/fred/Code/PyQt/dustbin/"
   dustbin: "/Users/fred/Music/dustbin/"
   # keep: "/Users/fred/Music/000 pré-écouté/"
-  select: "/Users/fred/Music/MusicForMovies/"
+  select: "/Users/fred/Music/Noël/"
 conf:
   auto_play_next_track: true
   log_level: ERROR
   # log_level: DEBUG
 actions:
-  Key_Escape: quit
-  Key_Space: play_next_track
-  Key_Meta: play_previous_track
-  # Key_Return: play
-  # Key_Return: import_old_tags
-  Key_Question: ask_discogs
+  Key_Escape: quit()
+  Key_Space: play_next_track()
+  Key_Meta: play_previous_track()
+  # Key_Return: play()
+  # Key_Return: import_old_tags()
+  Key_Question: ask_discogs()
 
   Key_0: set_position(0.0)
   Key_1: set_position(0.1)
@@ -72,9 +67,9 @@ actions:
   # Key_S: copy_to('select')
   Key_X: rename_to('select')
 
-  Key_Plus: incr_rating
+  Key_Plus: incr_rating()
   Key_Minus: incr_rating(-1)
-  Key_Asterisk: incr_rating
+  Key_Asterisk: incr_rating()
   Key_Dollar: incr_rating(-1)
 
   # Key_Less: clear_metas
@@ -98,10 +93,11 @@ actions:
 
   # Key_Up: incr_replay_speed(0.1)
   # Key_Down: incr_replay_speed(-0.1)
-  Key_Up: play_previous_track
-  Key_Down: play_next_track
+  Key_Up: play_previous_track()
+  Key_Down: play_next_track()
 
-  Key_I: make_insta
+  Key_I: make_insta()
+
 
 genres:
   A: A Cappella

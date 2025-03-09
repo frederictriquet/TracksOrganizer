@@ -15,17 +15,17 @@ then
     exit
 fi
 
-db=$(ffmpeg -i "$SRC_FILE" -vn -filter:a volumedetect -f null /dev/null 2>&1 | grep max_volume | cut -d: -f2 | cut -d' ' -f2)
-# echo $(basename "$SRC_FILE") $db
-if [ 1 -eq $(bc <<< "$db < 0.0") ]
-then
-    boost=$(bc <<< "- $db")
-    db="${boost}dB"
-    echo AMPLIFY $db
-else
-    echo KEEP AS IS
-    db=''
-fi
+db=''
+# db=$(ffmpeg -i "$SRC_FILE" -vn -filter:a volumedetect -f null /dev/null 2>&1 | grep max_volume | cut -d: -f2 | cut -d' ' -f2)
+# if [ 1 -eq $(bc <<< "$db < 0.0") ]
+# then
+#     boost=$(bc <<< "- $db")
+#     db="${boost}dB"
+#     echo AMPLIFY $db
+# else
+#     echo KEEP AS IS
+#     db=''
+# fi
 
 if [[ $db == '' && $EXT == 'mp3' ]]
 then

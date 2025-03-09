@@ -61,7 +61,12 @@ class TracksModel(QtCore.QAbstractTableModel):
         import mutagen
 
         filename = fullname.name
-        f = mutagen.File(fullname, easy=True)
+        try:
+            f = mutagen.File(fullname, easy=True)
+        except Exception as e:
+            logger.critical(fullname)
+            logger.critical(e)
+            return
         try:
             bitrate = int(f.info.bitrate / 1000)
         except AttributeError as e:

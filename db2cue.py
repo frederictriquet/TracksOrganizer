@@ -1,16 +1,18 @@
-import sqlite3
+import sqlite3, datetime
 
-con = sqlite3.connect("m.db")
+con = sqlite3.connect("Database2/m.db")
 cur = con.cursor()
 
-req = """
-select artist, title , datetime(timeLastPlayed, 'unixepoch', 'localtime'), timeLastPlayed-1717775895 as diff  from Track t 
+start_time = int(datetime.datetime(2024, 12, 22, 16, 14, 30, 0).timestamp())
+
+req = f"""
+select artist, title , datetime(timeLastPlayed, 'unixepoch', 'localtime'), timeLastPlayed-{start_time} as diff  from Track t 
 where isPlayed
 and diff >= 0
 ORDER by timeLastPlayed  limit 200
 """
 
-mp3filename = "House good"
+mp3filename = "Winter Weedmix'24"
 
 
 res = cur.execute(req)

@@ -1,12 +1,13 @@
 {
     "configurations": [
+
         {
             "name": "Organizer",
             "type": "debugpy",
             "request": "launch",
             "console": "integratedTerminal",
             "program": "organizer.py",
-            "justMyCode": true
+            "justMyCode": true,
         }
     ]
 }

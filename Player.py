@@ -5,14 +5,37 @@ import shutil
 from PyQt6 import QtWidgets, QtCore, QtGui
 from Logger import logger, set_log_level
 from TracksModel import TracksModel
-import vlc
+import vlc, json
 import Tools
 from Conf import Conf
 import Discogs
 import subprocess
+import threading
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 PATTERN = r"^.*\.(mp3|flac|aif|aiff)$"
 
+class PlayerHTTPRequestHandler(SimpleHTTPRequestHandler):
+    _player_instance = None
+
+    def do_GET(self):
+        self._player_instance.clear_filelist()
+        self.send_response(404)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(b'404 - Not Found')
+
+    def do_POST(self):
+        # self.send_header('Content-type', 'text/html')
+        try:
+            data_string = self.rfile.read(int(self.headers['Content-Length']))
+            data = json.loads(data_string)
+            print(data)
+            self._player_instance.push_command(data['command'])
+            self.send_response(200)
+        except:
+            self.send_response(400)
+        # self.end_headers()
 
 class Player(QtWidgets.QMainWindow):
     def __init__(self, conffilename: str, app: QtWidgets.QApplication):
@@ -35,6 +58,7 @@ class Player(QtWidgets.QMainWindow):
         self.setWindowTitle("Tracks Organizer")
         self.load_current_conffile()
         self.new_width = 1
+        self.action_to_run = None
 
     def init_create_ui(self):
         self.widget = QtWidgets.QWidget(self)
@@ -210,6 +234,19 @@ class Player(QtWidgets.QMainWindow):
         self.timer_tick.start()
         self.nb_ticks = 10
         self.jump_step_factor = 1
+        try:
+            self.launch_http_server()
+        except:
+            pass
+
+    def launch_http_server(self):
+        PlayerHTTPRequestHandler._player_instance = self
+        self.http_server = ThreadingHTTPServer(("127.0.0.1", 8000), PlayerHTTPRequestHandler)
+        self.http_server_thread = threading.Thread(target=self.http_server.serve_forever)
+        self.http_server_thread.daemon = True
+        self.http_server_thread.start()
+    
+    # def http_request_handler(self)
 
     def update_title_and_artist(self):
         self.track_model.update_title_and_artist(
@@ -323,11 +360,11 @@ class Player(QtWidgets.QMainWindow):
                     self.stop()
 
     def update_tick_timer(self):
+        self.run_action()
         self.nb_ticks -= 1
         if self.nb_ticks < 0:
             self.nb_ticks = 0
             self.jump_step_factor = 1
-        logger.debug(self.nb_ticks)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -451,6 +488,19 @@ class Player(QtWidgets.QMainWindow):
             return None
         return keyname[0]
 
+    def command_to_action(self, command: str):
+        actions = Conf.conf_data["actions"]
+        return f"self.{actions[command]}"
+
+    def run_action(self):
+        if self.action_to_run:
+            logger.critical(self.action_to_run)
+            eval(self.action_to_run)
+            self.action_to_run = None
+
+    def push_command(self, command: str):
+        self.action_to_run = self.command_to_action(command)
+
     def update_ui_items(self):
         if self.current_index == None:
             self.editableArtist.setText("")
@@ -556,6 +606,7 @@ class Player(QtWidgets.QMainWindow):
         self.close()
 
     def play_next_track(self):
+        logger.debug('here')
         self.select(increment=1)
         if self.load_current():
             self.play()

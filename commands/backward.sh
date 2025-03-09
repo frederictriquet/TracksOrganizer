@@ -1,0 +1,1 @@
+curl -d '{"command":"Key_Left"}' http://localhost:8000
